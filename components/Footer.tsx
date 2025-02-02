@@ -14,10 +14,10 @@ const Footer = () => {
             <li>Support</li>
           </ul>
           <div className="flex gap-4">
-            <img src="/footer/facebook.png" alt="" className="w-[1vw]" />
-            <img src="/footer/X1.png" alt="" className="w-[1vw]" />
-            <img src="/footer/ins.png" alt="" className="w-[1vw]" />
-            <img src="/footer/youtube.png" alt="" className="w-[1vw]" />
+            <Image src="/footer/facebook.png" alt="" className="w-[1vw]" />
+            <Image src="/footer/X1.png" alt="" className="w-[1vw]" />
+            <Image src="/footer/ins.png" alt="" className="w-[1vw]" />
+            <Image src="/footer/youtube.png" alt="" className="w-[1vw]" />
           </div>
         </div>
 
