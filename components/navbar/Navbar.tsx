@@ -7,7 +7,13 @@ const Navbar = () => {
     <div>
       <div className="flex justify-between items-center py-4">
         <Link href="/">
-          <Image className="w-[8vw]" src="/icon.jpeg" alt="health sphere" />
+          <Image
+            className="w-[8vw]"
+            src="/icon.jpeg"
+            alt="health sphere"
+            width={100}
+            height={100}
+          />
         </Link>
         <div className="flex items-center space-x-6">
           <div>Home</div>
