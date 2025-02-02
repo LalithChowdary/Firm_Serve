@@ -1,11 +1,11 @@
 import React from "react";
-
+import Image from "next/image";
 const Footer = () => {
   return (
     <div>
       <div className="flex flex-col ">
         <div className="flex flex-row items-center justify-between">
-          <img src="/icon.jpeg" alt="health sphere" className="w-[8vw]" />
+          <Image src="/icon.jpeg" alt="health sphere" className="w-[8vw]" />
 
           <ul className="flex text-xs font-semibold gap-8">
             <li>Book Now</li>

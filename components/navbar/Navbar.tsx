@@ -1,13 +1,13 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-
+import Image from "next/image";
 const Navbar = () => {
   return (
     <div>
       <div className="flex justify-between items-center py-4">
         <Link href="/">
-          <img className="w-[8vw]" src="/icon.jpeg" alt="health sphere" />
+          <Image className="w-[8vw]" src="/icon.jpeg" alt="health sphere" />
         </Link>
         <div className="flex items-center space-x-6">
           <div>Home</div>
