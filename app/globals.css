@@ -4,6 +4,8 @@
 
 body {
   font-family: Arial, Helvetica, sans-serif;
+  margin-left: 3vw;
+  margin-right: 3vw;
 }
 
 @layer base {

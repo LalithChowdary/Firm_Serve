@@ -1,7 +1,34 @@
 import React from "react";
 
 const Footer = () => {
-  return <div>Footer</div>;
+  return (
+    <div>
+      <div className="flex flex-col ">
+        <div className="flex flex-row items-center justify-between">
+          <img src="/icon.jpeg" alt="health sphere" className="w-[8vw]" />
+
+          <ul className="flex text-xs font-semibold gap-8">
+            <li>Book Now</li>
+            <li>Get Help</li>
+            <li>Contact US</li>
+            <li>Support</li>
+          </ul>
+          <div className="flex gap-4">
+            <img src="/footer/facebook.png" alt="" className="w-[1vw]" />
+            <img src="/footer/X1.png" alt="" className="w-[1vw]" />
+            <img src="/footer/ins.png" alt="" className="w-[1vw]" />
+            <img src="/footer/youtube.png" alt="" className="w-[1vw]" />
+          </div>
+        </div>
+
+        <hr className="border-black mt-16 " />
+
+        <div className="flex flex-row items-center justify-center mt-6 text-xs">
+          <p>© 2024 HealthApp. All rights reserved.</p>
+        </div>
+      </div>
+    </div>
+  );
 };
 
 export default Footer;
