@@ -16,10 +16,9 @@ const Navbar = () => {
           />
         </Link>
         <div className="flex items-center space-x-6">
-          <div>Home</div>
+          <Link href="/">Home</Link>
           <div>Book Appointment</div>
-          <div>Pill Box</div>
-          <div>Dasboard</div>
+          <Link href="/clients">Clients</Link>
           <div>Profile</div>
           <div className="flex gap-2">
             <Button asChild variant="outline" className="border-black">
