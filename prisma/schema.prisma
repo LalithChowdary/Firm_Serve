@@ -4,11 +4,144 @@
 // Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
+// schema.prisma
+
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mysql"
   url      = env("DATABASE_URL")
+}
+
+model Client {
+  client_id          Int                  @id @default(autoincrement())
+  name               String
+  email              String               @unique
+  address            String
+  phone_no           String
+  // Relations
+  Client_Case        Client_Case[]
+  Appointment_Client Appointment_Client[]
+  Billing            Billing[]
+}
+
+model Cases {
+  case_id     Int           @id @default(autoincrement())
+  filing_date DateTime
+  court_name  String
+  verdict     String?
+  title       String
+  case_type   String
+  status      String
+  // Relations
+  Document    Document[]
+  Staff_Case  Staff_Case[]
+  Client_Case Client_Case[]
+  Appointment Appointment[]
+  Billing     Billing[]
+}
+
+model Staff {
+  staff_id          Int                 @id @default(autoincrement())
+  name              String
+  experience        Int
+  role              String
+  phone_no          String
+  bar_number        String?
+  email             String              @unique
+  address           String
+  specialisation    String?
+  designation       String?
+  // Relations
+  Expense           Expense[]
+  Staff_Case        Staff_Case[]
+  Appointment_Staff Appointment_Staff[]
+}
+
+model Expense {
+  expense_id   Int      @id @default(autoincrement())
+  amount       Decimal  @db.Decimal(10, 2)
+  description  String
+  expense_date DateTime
+  paid_by      Int
+  // Relation to Staff
+  Staff        Staff    @relation(fields: [paid_by], references: [staff_id])
+}
+
+model Document {
+  doc_id      Int      @id @default(autoincrement())
+  upload_date DateTime
+  doc_type    String
+  case_id     Int
+  // Relation to Cases
+  Cases       Cases    @relation(fields: [case_id], references: [case_id])
+}
+
+model Staff_Case {
+  staff_id Int
+  case_id  Int
+  // Relations
+  Staff    Staff @relation(fields: [staff_id], references: [staff_id])
+  Cases    Cases @relation(fields: [case_id], references: [case_id])
+
+  @@id([staff_id, case_id])
+}
+
+model Client_Case {
+  client_id Int
+  case_id   Int
+  // Relations
+  Client    Client @relation(fields: [client_id], references: [client_id])
+  Cases     Cases  @relation(fields: [case_id], references: [case_id])
+
+  @@id([client_id, case_id])
+}
+
+model Appointment {
+  appointment_id     Int                  @id @default(autoincrement())
+  purpose            String
+  location           String
+  appointment_date   DateTime
+  case_id            Int
+  // Relation to Cases
+  Cases              Cases                @relation(fields: [case_id], references: [case_id])
+  // Many-to-many join tables
+  Appointment_Client Appointment_Client[]
+  Appointment_Staff  Appointment_Staff[]
+}
+
+model Billing {
+  billing_id   Int      @id @default(autoincrement())
+  payment_date DateTime
+  payment_mode String
+  due_date     DateTime
+  status       String
+  amount       Decimal  @db.Decimal(10, 2)
+  client_id    Int
+  case_id      Int
+  // Relations
+  Client       Client   @relation(fields: [client_id], references: [client_id])
+  Cases        Cases    @relation(fields: [case_id], references: [case_id])
+}
+
+model Appointment_Client {
+  appointment_id Int
+  client_id      Int
+  // Relations
+  Appointment    Appointment @relation(fields: [appointment_id], references: [appointment_id])
+  Client         Client      @relation(fields: [client_id], references: [client_id])
+
+  @@id([appointment_id, client_id])
+}
+
+model Appointment_Staff {
+  appointment_id Int
+  staff_id       Int
+  // Relations
+  Appointment    Appointment @relation(fields: [appointment_id], references: [appointment_id])
+  Staff          Staff       @relation(fields: [staff_id], references: [staff_id])
+
+  @@id([appointment_id, staff_id])
 }
