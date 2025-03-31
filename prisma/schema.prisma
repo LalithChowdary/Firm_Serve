@@ -1,11 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
-// schema.prisma
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -17,131 +9,184 @@ datasource db {
 
 model Client {
   client_id          Int                  @id @default(autoincrement())
-  name               String
-  email              String               @unique
-  address            String
-  phone_no           String
-  // Relations
-  Client_Case        Client_Case[]
+  name               String               @db.VarChar(100)
+  email              String               @unique(map: "email") @db.VarChar(100)
+  address            String               @db.VarChar(255)
+  phone_no           String               @db.VarChar(20)
   Appointment_Client Appointment_Client[]
   Billing            Billing[]
+  Client_Case        Client_Case[]
 }
 
 model Cases {
   case_id     Int           @id @default(autoincrement())
-  filing_date DateTime
-  court_name  String
-  verdict     String?
-  title       String
-  case_type   String
-  status      String
-  // Relations
-  Document    Document[]
-  Staff_Case  Staff_Case[]
-  Client_Case Client_Case[]
+  filing_date DateTime      @db.Date
+  court_name  String        @db.VarChar(100)
+  verdict     String?       @db.VarChar(255)
+  title       String        @db.VarChar(255)
+  case_type   String        @db.VarChar(50)
+  status      String        @db.VarChar(50)
   Appointment Appointment[]
   Billing     Billing[]
+  Client_Case Client_Case[]
+  Document    Document[]
+  Staff_Case  Staff_Case[]
 }
 
 model Staff {
   staff_id          Int                 @id @default(autoincrement())
-  name              String
+  name              String              @db.VarChar(100)
   experience        Int
-  role              String
-  phone_no          String
-  bar_number        String?
-  email             String              @unique
-  address           String
-  specialisation    String?
-  designation       String?
-  // Relations
+  role              String              @db.VarChar(50)
+  phone_no          String              @db.VarChar(20)
+  bar_number        String?             @db.VarChar(50)
+  email             String              @unique(map: "email") @db.VarChar(100)
+  address           String              @db.VarChar(255)
+  specialisation    String?             @db.VarChar(100)
+  designation       String?             @db.VarChar(50)
+  Appointment_Staff Appointment_Staff[]
   Expense           Expense[]
   Staff_Case        Staff_Case[]
-  Appointment_Staff Appointment_Staff[]
 }
 
 model Expense {
   expense_id   Int      @id @default(autoincrement())
   amount       Decimal  @db.Decimal(10, 2)
-  description  String
-  expense_date DateTime
+  description  String   @db.VarChar(255)
+  expense_date DateTime @db.Date
   paid_by      Int
-  // Relation to Staff
-  Staff        Staff    @relation(fields: [paid_by], references: [staff_id])
+  Staff        Staff    @relation(fields: [paid_by], references: [staff_id], onDelete: NoAction, onUpdate: NoAction, map: "Expense_ibfk_1")
+
+  @@index([paid_by], map: "paid_by")
 }
 
 model Document {
   doc_id      Int      @id @default(autoincrement())
-  upload_date DateTime
-  doc_type    String
+  upload_date DateTime @db.DateTime(0)
+  doc_type    String   @db.VarChar(50)
   case_id     Int
-  // Relation to Cases
-  Cases       Cases    @relation(fields: [case_id], references: [case_id])
+  Cases       Cases    @relation(fields: [case_id], references: [case_id], onDelete: NoAction, onUpdate: NoAction, map: "Document_ibfk_1")
+
+  @@index([case_id], map: "case_id")
 }
 
 model Staff_Case {
   staff_id Int
   case_id  Int
-  // Relations
-  Staff    Staff @relation(fields: [staff_id], references: [staff_id])
-  Cases    Cases @relation(fields: [case_id], references: [case_id])
+  Staff    Staff @relation(fields: [staff_id], references: [staff_id], onDelete: NoAction, onUpdate: NoAction, map: "Staff_Case_ibfk_1")
+  Cases    Cases @relation(fields: [case_id], references: [case_id], onDelete: NoAction, onUpdate: NoAction, map: "Staff_Case_ibfk_2")
 
   @@id([staff_id, case_id])
+  @@index([case_id], map: "case_id")
 }
 
 model Client_Case {
   client_id Int
   case_id   Int
-  // Relations
-  Client    Client @relation(fields: [client_id], references: [client_id])
-  Cases     Cases  @relation(fields: [case_id], references: [case_id])
+  Client    Client @relation(fields: [client_id], references: [client_id], onDelete: NoAction, onUpdate: NoAction, map: "Client_Case_ibfk_1")
+  Cases     Cases  @relation(fields: [case_id], references: [case_id], onDelete: NoAction, onUpdate: NoAction, map: "Client_Case_ibfk_2")
 
   @@id([client_id, case_id])
+  @@index([case_id], map: "case_id")
 }
 
 model Appointment {
   appointment_id     Int                  @id @default(autoincrement())
-  purpose            String
-  location           String
-  appointment_date   DateTime
+  purpose            String               @db.VarChar(255)
+  location           String               @db.VarChar(100)
+  appointment_date   DateTime             @db.DateTime(0)
   case_id            Int
-  // Relation to Cases
-  Cases              Cases                @relation(fields: [case_id], references: [case_id])
-  // Many-to-many join tables
+  Cases              Cases                @relation(fields: [case_id], references: [case_id], onDelete: NoAction, onUpdate: NoAction, map: "Appointment_ibfk_1")
   Appointment_Client Appointment_Client[]
   Appointment_Staff  Appointment_Staff[]
+
+  @@index([case_id], map: "case_id")
 }
 
 model Billing {
   billing_id   Int      @id @default(autoincrement())
-  payment_date DateTime
-  payment_mode String
-  due_date     DateTime
-  status       String
+  payment_date DateTime @db.Date
+  payment_mode String   @db.VarChar(50)
+  due_date     DateTime @db.Date
+  status       String   @db.VarChar(50)
   amount       Decimal  @db.Decimal(10, 2)
   client_id    Int
   case_id      Int
-  // Relations
-  Client       Client   @relation(fields: [client_id], references: [client_id])
-  Cases        Cases    @relation(fields: [case_id], references: [case_id])
+  Client       Client   @relation(fields: [client_id], references: [client_id], onDelete: NoAction, onUpdate: NoAction, map: "Billing_ibfk_1")
+  Cases        Cases    @relation(fields: [case_id], references: [case_id], onDelete: NoAction, onUpdate: NoAction, map: "Billing_ibfk_2")
+
+  @@index([case_id], map: "case_id")
+  @@index([client_id], map: "client_id")
 }
 
 model Appointment_Client {
   appointment_id Int
   client_id      Int
-  // Relations
-  Appointment    Appointment @relation(fields: [appointment_id], references: [appointment_id])
-  Client         Client      @relation(fields: [client_id], references: [client_id])
+  Appointment    Appointment @relation(fields: [appointment_id], references: [appointment_id], onDelete: NoAction, onUpdate: NoAction, map: "Appointment_Client_ibfk_1")
+  Client         Client      @relation(fields: [client_id], references: [client_id], onDelete: NoAction, onUpdate: NoAction, map: "Appointment_Client_ibfk_2")
 
   @@id([appointment_id, client_id])
+  @@index([client_id], map: "client_id")
 }
 
 model Appointment_Staff {
   appointment_id Int
   staff_id       Int
-  // Relations
-  Appointment    Appointment @relation(fields: [appointment_id], references: [appointment_id])
-  Staff          Staff       @relation(fields: [staff_id], references: [staff_id])
+  Appointment    Appointment @relation(fields: [appointment_id], references: [appointment_id], onDelete: NoAction, onUpdate: NoAction, map: "Appointment_Staff_ibfk_1")
+  Staff          Staff       @relation(fields: [staff_id], references: [staff_id], onDelete: NoAction, onUpdate: NoAction, map: "Appointment_Staff_ibfk_2")
 
   @@id([appointment_id, staff_id])
+  @@index([staff_id], map: "staff_id")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String  @map("user_id")
+  type              String
+  provider          String
+  providerAccountId String  @map("provider_account_id")
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique @map("session_token")
+  userId       String   @map("user_id")
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model User {
+  id             String    @id @default(cuid())
+  name           String?
+  email          String?   @unique
+  emailVerified  DateTime? @map("email_verified")
+  hashedPassword String
+  image          String?
+  accounts       Account[]
+  sessions       Session[]
+
+  @@map("users")
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
 }
