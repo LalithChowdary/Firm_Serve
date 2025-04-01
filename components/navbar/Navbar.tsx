@@ -25,7 +25,7 @@ const Navbar = () => {
               <Link href="/login">Login</Link>
             </Button>
             <Button asChild className="bg-black text-white">
-              <Link href="/login">Sign Up</Link>
+              <Link href="/api/auth/signin">Sign Up</Link>
             </Button>
           </div>
         </div>
