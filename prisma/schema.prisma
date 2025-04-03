@@ -1,3 +1,9 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -7,167 +13,54 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Client {
-  client_id          Int                  @id @default(autoincrement())
-  name               String               @db.VarChar(100)
-  email              String               @unique(map: "email") @db.VarChar(100)
-  address            String               @db.VarChar(255)
-  phone_no           String               @db.VarChar(20)
-  Appointment_Client Appointment_Client[]
-  Billing            Billing[]
-  Client_Case        Client_Case[]
+model Account {
+  id                String  @id @default(cuid())
+  userId            String  @map("user_id")
+  type              String
+  provider          String
+  providerAccountId String  @map("provider_account_id")
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
 }
 
-model Cases {
-  case_id     Int           @id @default(autoincrement())
-  filing_date DateTime      @db.Date
-  court_name  String        @db.VarChar(100)
-  verdict     String?       @db.VarChar(255)
-  title       String        @db.VarChar(255)
-  case_type   String        @db.VarChar(50)
-  status      String        @db.VarChar(50)
-  Appointment Appointment[]
-  Billing     Billing[]
-  Client_Case Client_Case[]
-  Document    Document[]
-  Staff_Case  Staff_Case[]
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique @map("session_token")
+  userId       String   @map("user_id")
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
 }
 
-model Staff {
-  staff_id          Int                 @id @default(autoincrement())
-  user_id           Int?
-  name              String              @db.VarChar(100)
-  experience        Int
-  role              String              @db.VarChar(50)
-  phone_no          String              @db.VarChar(20)
-  bar_number        String?             @db.VarChar(50)
-  email             String?             @db.VarChar(100)
-  address           String              @db.VarChar(255)
-  specialisation    String?             @db.VarChar(100)
-  designation       String?             @db.VarChar(50)
-  Appointment_Staff Appointment_Staff[]
-  Expense           Expense[]
-  users             users?              @relation(fields: [user_id], references: [id], onDelete: Cascade, map: "Staff_ibfk_1")
-  Staff_Case        Staff_Case[]
+model User {
+  id             String    @id @default(cuid())
+  name           String?
+  email          String?   @unique
+  emailVerified  DateTime? @map("email_verified")
+  hashedPassword String?
+  image          String?
+  accounts       Account[]
+  sessions       Session[]
 
-  @@index([user_id], map: "user_id")
+  @@map("users")
 }
 
-model Expense {
-  expense_id   Int      @id @default(autoincrement())
-  amount       Decimal  @db.Decimal(10, 2)
-  description  String   @db.VarChar(255)
-  expense_date DateTime @db.Date
-  paid_by      Int
-  Staff        Staff    @relation(fields: [paid_by], references: [staff_id], onDelete: NoAction, onUpdate: NoAction, map: "Expense_ibfk_1")
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
 
-  @@index([paid_by], map: "paid_by")
-}
-
-model Document {
-  doc_id      Int      @id @default(autoincrement())
-  upload_date DateTime @db.DateTime(0)
-  doc_type    String   @db.VarChar(50)
-  case_id     Int
-  Cases       Cases    @relation(fields: [case_id], references: [case_id], onDelete: Cascade, map: "Document_ibfk_1")
-
-  @@index([case_id], map: "case_id")
-}
-
-model Staff_Case {
-  staff_id Int
-  case_id  Int
-  Staff    Staff @relation(fields: [staff_id], references: [staff_id], onDelete: Cascade, map: "Staff_Case_ibfk_1")
-  Cases    Cases @relation(fields: [case_id], references: [case_id], onDelete: Cascade, map: "Staff_Case_ibfk_2")
-
-  @@id([staff_id, case_id])
-  @@index([case_id], map: "case_id")
-}
-
-model Client_Case {
-  client_id Int
-  case_id   Int
-  Client    Client @relation(fields: [client_id], references: [client_id], onDelete: Cascade, map: "Client_Case_ibfk_1")
-  Cases     Cases  @relation(fields: [case_id], references: [case_id], onDelete: Cascade, map: "Client_Case_ibfk_2")
-
-  @@id([client_id, case_id])
-  @@index([case_id], map: "case_id")
-}
-
-model Appointment {
-  appointment_id     Int                  @id @default(autoincrement())
-  purpose            String               @db.VarChar(255)
-  location           String               @db.VarChar(100)
-  appointment_date   DateTime             @db.DateTime(0)
-  case_id            Int
-  Cases              Cases                @relation(fields: [case_id], references: [case_id], onDelete: NoAction, onUpdate: NoAction, map: "Appointment_ibfk_1")
-  Appointment_Client Appointment_Client[]
-  Appointment_Staff  Appointment_Staff[]
-
-  @@index([case_id], map: "case_id")
-}
-
-model Billing {
-  billing_id   Int      @id @default(autoincrement())
-  payment_date DateTime @db.Date
-  payment_mode String   @db.VarChar(50)
-  due_date     DateTime @db.Date
-  status       String   @db.VarChar(50)
-  amount       Decimal  @db.Decimal(10, 2)
-  client_id    Int
-  case_id      Int
-  Client       Client   @relation(fields: [client_id], references: [client_id], onDelete: NoAction, onUpdate: NoAction, map: "Billing_ibfk_1")
-  Cases        Cases    @relation(fields: [case_id], references: [case_id], onDelete: NoAction, onUpdate: NoAction, map: "Billing_ibfk_2")
-
-  @@index([case_id], map: "case_id")
-  @@index([client_id], map: "client_id")
-}
-
-model Appointment_Client {
-  appointment_id Int
-  client_id      Int
-  Appointment    Appointment @relation(fields: [appointment_id], references: [appointment_id], onDelete: Cascade, map: "Appointment_Client_ibfk_1")
-  Client         Client      @relation(fields: [client_id], references: [client_id], onDelete: Cascade, map: "Appointment_Client_ibfk_2")
-
-  @@id([appointment_id, client_id])
-  @@index([client_id], map: "client_id")
-}
-
-model Appointment_Staff {
-  appointment_id Int
-  staff_id       Int
-  Appointment    Appointment @relation(fields: [appointment_id], references: [appointment_id], onDelete: Cascade, map: "Appointment_Staff_ibfk_1")
-  Staff          Staff       @relation(fields: [staff_id], references: [staff_id], onDelete: Cascade, map: "Appointment_Staff_ibfk_2")
-
-  @@id([appointment_id, staff_id])
-  @@index([staff_id], map: "staff_id")
-}
-
-model sessions {
-  id            Int      @id @default(autoincrement())
-  session_token String   @unique(map: "session_token") @db.VarChar(255)
-  user_id       Int
-  expires       DateTime @db.DateTime(0)
-  users         users    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "sessions_ibfk_1")
-
-  @@index([user_id], map: "user_id")
-}
-
-model users {
-  id             Int        @id @default(autoincrement())
-  name           String?    @db.VarChar(255)
-  email          String?    @unique(map: "email") @db.VarChar(255)
-  email_verified DateTime?  @db.DateTime(0)
-  hashedPassword String     @db.VarChar(255)
-  image          String?    @db.VarChar(255)
-  Staff          Staff[]
-  sessions       sessions[]
-}
-
-model verification_tokens {
-  identifier String   @db.VarChar(255)
-  token      String   @db.VarChar(255)
-  expires    DateTime @db.DateTime(0)
-
-  @@unique([identifier, token], map: "identifier")
+  @@unique([identifier, token])
+  @@map("verification_tokens")
 }

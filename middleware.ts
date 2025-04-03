@@ -1,13 +1,8 @@
-//import middleware from "next-auth/middleware";
-//or
-export { default } from "next-auth/middleware";
+export {default} from "next-auth/middleware";
+
 export const config = {
-    matcher: [
-        // '/clients/:path*',
-        // '/projects/:path*',
-        // '/dashboard/:path*',
-        // '/settings/:path*',
-        // '/users/:path*',
-        // '/api/auth/signin'
-    ],
+  matcher: [
+    // Match all paths except for the ones starting with /api/auth
+    // '/',
+  ],
 };

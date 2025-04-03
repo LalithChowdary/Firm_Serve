@@ -1,43 +1,52 @@
-import NextAuth , {NextAuthOptions} from "next-auth"
+import { prisma } from "@/prisma/client";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
-import {prisma} from "@/prisma/client";
-import CredentialsProvider from "next-auth/providers/credentials"
+import { NextAuthOptions } from "next-auth";
+import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcrypt";
+import NextAuth from "next-auth";
 
 
-export const authOptions : NextAuthOptions = {
+export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
-  providers :[
+  providers: [
     CredentialsProvider({
-        name: "Credentials",
-        credentials: {
-            email: { label: "Email", type: "email" , placeholder: "email" },
-            password: { label: "Password", type: "password" }
+      name: "Credentials",
+      credentials: {
+        email: {
+          label: "Email",
+          type: "email",
+          placeholder: "Email",
         },
-        async authorize(credentials) {
-            if (!credentials?.email || !credentials?.password) {
-              throw new Error("Missing credentials")
-            }
-            const user = await prisma.users.findUnique({
-              where: { email: credentials.email }
-            })
-            if (!user) {
-              throw new Error("User not found")
-            }
-            const valid = await bcrypt.compare(credentials.password, user.hashedPassword)
-            if (!valid) {
-              throw new Error("Incorrect password")
-            }
-            return {
-              ...user,
-              id: user.id.toString(), // Convert numeric ID to string
-            }
-          }     
-    }),
-  ]
-  
-}
+        password: {
+          label: "Password",
+          type: "password",
+          placeholder: "Password",
+        },
+      },
+      async authorize(credentials, req) {
+        if (!credentials?.email || !credentials.password)
+          return null;
 
-const handler = NextAuth(authOptions);
-  
-  export { handler as GET, handler as POST }
+        const user = await prisma.user.findUnique({
+          where: { email: credentials.email },
+        });
+
+        if (!user) return null;
+
+        const passwordsMatch = await bcrypt.compare(
+          credentials.password,
+          user.hashedPassword!
+        );
+
+        return passwordsMatch ? user : null;
+      },
+    }),
+  ],
+  session: {
+    strategy: "jwt",
+  },
+};
+
+const handler = NextAuth(authOptions)
+
+export { handler as GET, handler as POST }
