@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
       status: 400,
     });
 
-  const user = await prisma.user.findUnique({
+  const user = await prisma.clientAuth.findUnique({
     where: { email: body.email },
   });
 
@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
     );
 
   const hashedPassword = await bcrypt.hash(body.password, 10);
-  const newUser = await prisma.user.create({ 
+  const newUser = await prisma.clientAuth.create({ 
     data: {
       email: body.email,
       hashedPassword
