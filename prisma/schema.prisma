@@ -8,41 +8,14 @@ datasource db {
 }
 
 model Session {
-  id           String      @id @default(cuid())
-  sessionToken String      @unique @map("session_token")
+  id           String   @id @default(cuid())
+  sessionToken String   @unique @map("session_token")
   expires      DateTime
-  clientId     String?     @map("client_id")
-  staffId      String?     @map("staff_id")
-  client       ClientAuth? @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  staff        StaffAuth?  @relation(fields: [staffId], references: [id], onDelete: Cascade)
+  user_id      String
+  User         User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
-  @@index([clientId], map: "sessions_client_id_fkey")
-  @@index([staffId], map: "sessions_staff_id_fkey")
+  @@index([user_id], map: "sessions_user_id_fkey")
   @@map("sessions")
-}
-
-model StaffAuth {
-  id             String    @id @default(cuid())
-  email          String?   @unique
-  emailVerified  DateTime? @map("email_verified")
-  hashedPassword String?
-  image          String?
-  Staff          Staff?
-  sessions       Session[]
-
-  @@map("staff_auth")
-}
-
-model ClientAuth {
-  id             String    @id @default(cuid())
-  email          String?   @unique
-  emailVerified  DateTime? @map("email_verified")
-  hashedPassword String?
-  image          String?
-  Client         Client?
-  sessions       Session[]
-
-  @@map("client_auth")
 }
 
 model VerificationToken {
@@ -125,7 +98,7 @@ model Client {
   phone_no           String               @db.VarChar(20)
   Appointment_Client Appointment_Client[]
   Billing            Billing[]
-  client_auth        ClientAuth           @relation(fields: [client_id], references: [id], onDelete: Cascade, map: "fk_client_auth")
+  client_auth        User                 @relation(fields: [client_id], references: [id], onDelete: Cascade, map: "fk_client_auth")
   Client_Case        Client_Case[]
 }
 
@@ -164,15 +137,13 @@ model Staff {
   staff_id          String              @id
   name              String              @db.VarChar(100)
   experience        Int
-  role              String              @db.VarChar(50)
   phone_no          String              @db.VarChar(20)
   bar_number        String?             @db.VarChar(50)
   address           String              @db.VarChar(255)
   specialisation    String?             @db.VarChar(100)
-  designation       String?             @db.VarChar(50)
   Appointment_Staff Appointment_Staff[]
   Expense           Expense[]
-  staff_auth        StaffAuth           @relation(fields: [staff_id], references: [id], onDelete: Cascade, map: "fk_staffauth_staff")
+  staff_auth        User                @relation(fields: [staff_id], references: [id], onDelete: Cascade, map: "fk_staffauth_staff")
   Staff_Case        Staff_Case[]
 }
 
@@ -184,4 +155,22 @@ model Staff_Case {
 
   @@id([staff_id, case_id])
   @@index([case_id], map: "fk_staffcase_case")
+}
+
+model User {
+  id             String    @id
+  email          String    @unique(map: "email")
+  email_verified DateTime?
+  hashedPassword String?
+  image          String?
+  role           User_role
+  Client         Client?
+  Staff          Staff?
+  sessions       Session[]
+}
+
+enum User_role {
+  CLIENT
+  STAFF
+  ADMIN
 }
