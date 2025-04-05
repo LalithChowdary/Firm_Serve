@@ -1,47 +1,256 @@
-import { prisma } from "@/prisma/client";
-import React from "react";
+"use client";
+import React, { useState, useEffect } from "react";
 
-export default async function Home() {
-  const clients = await prisma.staff.findMany({
-    include: {
-      staff_auth: true, // Include related User data
-    },
+export default function Home() {
+  const [staffList, setStaffList] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedSpecialization, setSelectedSpecialization] = useState("");
+  const [selectedRole, setSelectedRole] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    setLoading(true);
+    fetch("/api/admin/staff")
+      .then((res) => res.json())
+      .then((data) => {
+        console.log("Fetched staff data:", data);
+
+        // Log the first staff member to see actual field names
+        if (data && data.length > 0) {
+          console.log("First staff member fields:", Object.keys(data[0]));
+          console.log("Role value:", data[0].s_role);
+        }
+
+        setStaffList(data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("Error fetching staff:", err);
+        setLoading(false);
+      });
+  }, []);
+
+  const filteredStaffList = staffList.filter((staff: any) => {
+    // Search term filter
+    const matchesSearch =
+      searchTerm === "" ||
+      (staff.name &&
+        staff.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (staff.staff_auth?.email &&
+        staff.staff_auth.email
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase()));
+
+    // Specialization filter
+    let matchesSpec = selectedSpecialization === "";
+    if (!matchesSpec && staff.specialisation) {
+      matchesSpec = staff.specialisation
+        .toLowerCase()
+        .includes(selectedSpecialization.toLowerCase());
+    }
+
+    // Role filter - FIXED: Now using s_role instead of designation
+    let matchesRole = selectedRole === "";
+    if (!matchesRole && staff.s_role) {
+      matchesRole = staff.s_role
+        .toLowerCase()
+        .includes(selectedRole.toLowerCase());
+    }
+
+    // Debug logs to help troubleshoot
+    if (!matchesRole && selectedRole !== "") {
+      console.log(
+        "Staff s_role:",
+        staff.s_role,
+        "Selected role:",
+        selectedRole
+      );
+    }
+
+    return matchesSearch && matchesSpec && matchesRole;
   });
 
+  const handleSpecializationChange = (spec: string) => {
+    console.log("Setting specialization to:", spec);
+    setSelectedSpecialization(spec);
+  };
+
+  const handleRoleChange = (role: string) => {
+    console.log("Setting role to:", role);
+    setSelectedRole(role);
+  };
+
+  // Debug logging for state changes
+  console.log("Current specialization:", selectedSpecialization);
+  console.log("Current role:", selectedRole);
+
   return (
-    <div>
-      <table>
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Address</th>
-            <th>Phone No</th>
-            <th>Email</th>
-            <th>Bar Number</th>
-            <th>Designation</th>
-            <th>Specialisation</th>
-            <th>Experience</th>
-            <th>Role</th>
-            {/* Add other headers if needed */}
-          </tr>
-        </thead>
-        <tbody>
-          {clients.map((staff) => (
-            <tr key={staff.staff_id}>
-              <td>{staff.name}</td>
-              <td>{staff.address}</td>
-              <td>{staff.phone_no}</td>
-              <td>{staff.staff_auth.email}</td>
-              <td>{staff.bar_number}</td>
-              <td>{staff.designation}</td>
-              <td>{staff.specialisation}</td>
-              <td>{staff.experience}</td>
-              <td>{staff.s_role}</td>
-              {/* Render other client fields as needed */}
-            </tr>
-          ))}
-        </tbody>
-      </table>
+    <div className="bg-white min-h-screen p-8 grid grid-cols-2 grid-rows-1 ">
+      {/* Left side: Staff list */}
+      <div className="pr-4 overflow-y-auto">
+        <h1 className="text-3xl font-bold text-gray-800 mb-6 pl-2">
+          Staff Overview
+        </h1>
+
+        <div className="pl-12">
+          {" "}
+          {/* Added padding container for all staff cards */}
+          {loading ? (
+            <p>Loading staff...</p>
+          ) : filteredStaffList.length === 0 ? (
+            <>
+              <p>No staff members match your filters.</p>
+              <p className="text-sm text-gray-500 mt-2">
+                Try clearing filters or checking the browser console for
+                debugging info.
+              </p>
+            </>
+          ) : (
+            filteredStaffList.map((staff: any) => (
+              <div
+                key={staff.staff_id}
+                className="grid grid-cols-1 grid-rows-2 mb-8"
+              >
+                <div>
+                  <h2 className="text-2xl font-semibold text-gray-900">
+                    {staff.name}{" "}
+                    <span className="text-xs text-gray-500 mt-[-5px] ml-[-6px]">
+                      {staff.designation}
+                    </span>
+                  </h2>
+                </div>
+                <div className="flex flex-col ml-2 mt-[-6px]">
+                  <div className="font-medium text-gray-700">
+                    Specialised in {staff.specialisation}
+                  </div>
+                  <div className="font-medium text-gray-700">
+                    Email {staff.staff_auth?.email}
+                  </div>
+                </div>
+                <div className="mt-6 mb-[-10px]">
+                  <hr className="w-[70%]" />
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+
+      {/* Right side: Fixed search component */}
+      <div className="relative">
+        <div className="sticky top-[30%] bottom- left-0 flex justify-center">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-5 w-full max-w-md">
+            <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-4">
+              Find Staff
+            </h3>
+
+            {/* Search Input */}
+            <div className="mb-6">
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Search Staff"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg
+                      focus:outline-none focus:ring-2 focus:ring-gray-400 bg-white dark:bg-gray-700
+                      text-gray-700 dark:text-gray-200"
+                />
+                <svg
+                  className="w-5 h-5 absolute right-3 top-3 text-gray-400"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                  />
+                </svg>
+              </div>
+            </div>
+
+            {/* Filters */}
+            <div className="grid grid-cols-2 gap-6">
+              {/* Specialization */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Specialization
+                </label>
+                <div className="space-y-2">
+                  {["", "criminal", "family", "corporate"].map((spec) => (
+                    <div className="flex items-center" key={spec || "all"}>
+                      <div className="relative flex items-center mr-2">
+                        <input
+                          type="radio"
+                          id={`spec-${spec || "all"}`}
+                          name="specialization"
+                          value={spec}
+                          checked={selectedSpecialization === spec}
+                          onChange={() => handleSpecializationChange(spec)}
+                          className="appearance-none w-4 h-4 rounded-full border border-black checked:bg-black checked:border-black focus:ring-0 focus:outline-none focus:border-black"
+                          style={{ accentColor: "black" }}
+                        />
+                      </div>
+                      <label
+                        htmlFor={`spec-${spec || "all"}`}
+                        className="text-sm text-gray-700 dark:text-gray-300 cursor-pointer"
+                      >
+                        {spec === ""
+                          ? "All"
+                          : spec.charAt(0).toUpperCase() +
+                            spec.slice(1) +
+                            " Law"}
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Role */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Role
+                </label>
+                <div className="space-y-2">
+                  {[
+                    "",
+                    "Lawyer",
+                    "Paralegal",
+                    "Secretary",
+                    "Accountant",
+                    "IT Support",
+                  ].map((role) => (
+                    <div className="flex items-center" key={role || "all"}>
+                      <div className="relative flex items-center mr-2">
+                        <input
+                          type="radio"
+                          id={`role-${role || "all"}`}
+                          name="role"
+                          value={role.toLowerCase()}
+                          checked={selectedRole === role.toLowerCase()}
+                          onChange={() => handleRoleChange(role.toLowerCase())}
+                          className="appearance-none w-4 h-4 rounded-full border border-black checked:bg-black checked:border-black focus:ring-0 focus:outline-none focus:border-black"
+                          style={{ accentColor: "black" }}
+                        />
+                      </div>
+                      <label
+                        htmlFor={`role-${role || "all"}`}
+                        className="text-sm text-gray-700 dark:text-gray-300 cursor-pointer"
+                      >
+                        {role === "" ? "All" : role}
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
