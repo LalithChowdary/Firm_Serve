@@ -13,7 +13,7 @@ const ClientNav = async () => {
       <div className="flex justify-between items-center py-4">
         <Link href="/">
           <Image
-            className="w-[30vw]"
+            className="w-[8vw]"
             src="/icon.jpeg"
             alt="health sphere"
             width={100}
