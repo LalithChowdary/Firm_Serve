@@ -54,7 +54,7 @@ const Footer = () => {
         <hr className="border-black mt-16 " />
 
         <div className="flex flex-row items-center justify-center mt-6 text-xs">
-          <p>© 2024 HealthApp. All rights reserved.</p>
+          <p>© 2025 LawEdge . All rights reserved.</p>
         </div>
       </div>
     </div>
