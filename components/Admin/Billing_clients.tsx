@@ -36,7 +36,7 @@ export default function Home() {
       searchTerm === "" ||
       (Bills.Client.name &&
         Bills.Client.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (Bills.amout &&
+      (Bills.amount &&
         Bills.amount.toLowerCase().includes(searchTerm.toLowerCase()));
 
     // Specialization filter
