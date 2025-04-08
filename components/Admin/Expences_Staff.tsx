@@ -65,7 +65,7 @@ export default function Home() {
           ) : (
             filteredExpenseList.map((Expense: any) => (
               <div
-                key={Expense.Expense_id}
+                key={Expense.expense_id}
                 className="grid grid-cols-1 grid-rows-2 mb-8"
               >
                 <div>
