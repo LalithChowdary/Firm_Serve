@@ -102,11 +102,13 @@ export default function Home() {
                   <div className="font-medium text-gray-700">
                     Status {Bills.status}
                   </div>
-                  {Bills.status != "Paid" && (
-                    <div className="font-medium text-gray-700">
-                      Due date {Bills.Due_date}
-                    </div>
-                  )}
+                  <div>
+                    {Bills.status != "Paid" && (
+                      <div className="font-medium text-gray-700">
+                        Due date {Bills.Due_date}
+                      </div>
+                    )}
+                  </div>
                 </div>
                 <div className="mt-6 mb-[-10px]">
                   <hr className="w-[70%]" />

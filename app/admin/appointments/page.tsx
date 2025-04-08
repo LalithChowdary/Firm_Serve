@@ -105,7 +105,7 @@ export default function Home() {
               <div className="relative">
                 <input
                   type="text"
-                  placeholder="Search Staff"
+                  placeholder="Search Appointments"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg
