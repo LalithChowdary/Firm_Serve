@@ -3,17 +3,16 @@ import { match } from "assert";
 import React, { useState, useEffect } from "react";
 
 export default function Home() {
-  const [billingList, setBillingList] = useState([]);
+  const [ExpenceList, setExpenceList] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedStatus, setSelectedStatus] = useState("");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     setLoading(true);
-    fetch("/api/admin/billing")
+    fetch("/api/admin/expences")
       .then((res) => res.json())
       .then((data) => {
-        console.log("Fetched Billing data:", data);
+        console.log("Fetched Expences data:", data);
 
         // Log the first staff member to see actual field names
         if (data && data.length > 0) {
@@ -21,47 +20,26 @@ export default function Home() {
           console.log("Role value:", data[0].s_role);
         }
 
-        setBillingList(data);
+        setExpenceList(data);
         setLoading(false);
       })
       .catch((err) => {
-        console.error("Error fetching Billing data:", err);
+        console.error("Error fetching Expences data:", err);
         setLoading(false);
       });
   }, []);
 
-  const filteredBillingList = billingList.filter((Bills: any) => {
+  const filteredExpenseList = ExpenceList.filter((Expense: any) => {
     // Search term filter
     const matchesSearch =
       searchTerm === "" ||
-      (Bills.Client.name &&
-        Bills.Client.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (Bills.amout &&
-        Bills.amount.toLowerCase().includes(searchTerm.toLowerCase()));
+      (Expense.Staff.name &&
+        Expense.Staff.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (Expense.amount &&
+        Expense.amount.toLowerCase().includes(searchTerm.toLowerCase()));
 
-    // Specialization filter
-    let matchesBill = selectedStatus === "";
-    if (!matchesBill && Bills.status) {
-      matchesBill = Bills.status
-        .toLowerCase()
-        .includes(selectedStatus.toLowerCase());
-    }
-
-    return matchesSearch && matchesBill;
+    return matchesSearch;
   });
-  const handleStatusChange = (spec: string) => {
-    console.log("Setting specialization to:", spec);
-    setSelectedStatus(spec);
-  };
-
-  // const handleRoleChange = (role: string) => {
-  //   console.log("Setting role to:", role);
-  //   setSelectedRole(role);
-  // };
-
-  // Debug logging for state changes
-  console.log("Current specialization:", selectedStatus);
-  // console.log("Current role:", selectedRole);
 
   return (
     <div className="bg-white min-h-screen p-8 grid grid-cols-2 grid-rows-1 ">
@@ -76,7 +54,7 @@ export default function Home() {
           {/* Added padding container for all staff cards */}
           {loading ? (
             <p>Loading staff...</p>
-          ) : filteredBillingList.length === 0 ? (
+          ) : filteredExpenseList.length === 0 ? (
             <>
               <p>No Bills match your filters.</p>
               <p className="text-sm text-gray-500 mt-2">
@@ -85,28 +63,26 @@ export default function Home() {
               </p>
             </>
           ) : (
-            filteredBillingList.map((Bills: any) => (
+            filteredExpenseList.map((Expense: any) => (
               <div
-                key={Bills.Billing_id}
+                key={Expense.Expense_id}
                 className="grid grid-cols-1 grid-rows-2 mb-8"
               >
                 <div>
                   <h2 className="text-2xl font-semibold text-gray-900">
-                    {Bills.Client.name}{" "}
+                    {Expense.Staff.name}{" "}
                   </h2>
                 </div>
                 <div className="flex flex-col ml-2 mt-[-14px]">
                   <div className="font-medium text-gray-700">
-                    Amount {Bills.amount}
+                    Amount {Expense.amount}
                   </div>
                   <div className="font-medium text-gray-700">
-                    Status {Bills.status}
+                    Paid on {Expense.expense_date}
                   </div>
-                  {Bills.status != "Paid" && (
-                    <div className="font-medium text-gray-700">
-                      Due date {Bills.Due_date}
-                    </div>
-                  )}
+                  <div className="font-medium text-gray-700">
+                    Description:{Expense.description}
+                  </div>
                 </div>
                 <div className="mt-6 mb-[-10px]">
                   <hr className="w-[70%]" />
@@ -155,78 +131,6 @@ export default function Home() {
             </div>
 
             {/* Filters */}
-            <div className="grid grid-cols-2 gap-6">
-              {/* Specialization */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Specialization
-                </label>
-                <div className="space-y-2">
-                  {["", "Paid", "Pending"].map((spec) => (
-                    <div className="flex items-center" key={spec || "all"}>
-                      <div className="relative flex items-center mr-2">
-                        <input
-                          type="radio"
-                          id={`spec-${spec || "all"}`}
-                          name="specialization"
-                          value={spec}
-                          checked={selectedStatus === spec}
-                          onChange={() => handleStatusChange(spec)}
-                          className="appearance-none w-4 h-4 rounded-full border border-black checked:bg-black checked:border-black focus:ring-0 focus:outline-none focus:border-black"
-                          style={{ accentColor: "black" }}
-                        />
-                      </div>
-                      <label
-                        htmlFor={`spec-${spec || "all"}`}
-                        className="text-sm text-gray-700 dark:text-gray-300 cursor-pointer"
-                      >
-                        {spec === ""
-                          ? "All"
-                          : spec.charAt(0).toUpperCase() + spec.slice(1)}
-                      </label>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Role
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Role
-                </label>
-                <div className="space-y-2">
-                  {[
-                    "",
-                    "Lawyer",
-                    "Paralegal",
-                    "Secretary",
-                    "Accountant",
-                    "IT Support",
-                  ].map((role) => (
-                    <div className="flex items-center" key={role || "all"}>
-                      <div className="relative flex items-center mr-2">
-                        <input
-                          type="radio"
-                          id={`role-${role || "all"}`}
-                          name="role"
-                          value={role.toLowerCase()}
-                          checked={selectedRole === role.toLowerCase()}
-                          onChange={() => handleRoleChange(role.toLowerCase())}
-                          className="appearance-none w-4 h-4 rounded-full border border-black checked:bg-black checked:border-black focus:ring-0 focus:outline-none focus:border-black"
-                          style={{ accentColor: "black" }}
-                        />
-                      </div>
-                      <label
-                        htmlFor={`role-${role || "all"}`}
-                        className="text-sm text-gray-700 dark:text-gray-300 cursor-pointer"
-                      >
-                        {role === "" ? "All" : role}
-                      </label>
-                    </div>
-                  ))}
-                </div>
-              </div> */}
-            </div>
           </div>
         </div>
       </div>
