@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import React, { useState, useEffect } from "react";
 
 export default function Home() {
@@ -112,12 +113,14 @@ export default function Home() {
                 className="grid grid-cols-1 grid-rows-2 mb-8"
               >
                 <div>
-                  <h2 className="text-2xl font-semibold text-gray-900">
-                    {staff.name}{" "}
-                    <span className="text-xs text-gray-500 mt-[-5px] ml-[-6px]">
-                      {staff.designation}
-                    </span>
-                  </h2>
+                  <Link href={`/admin/staff/${staff.staff_id}`}>
+                    <h2 className="text-2xl font-semibold text-gray-900">
+                      {staff.name}{" "}
+                      <span className="text-xs text-gray-500 mt-[-5px] ml-[-6px]">
+                        {staff.designation}
+                      </span>
+                    </h2>
+                  </Link>
                 </div>
                 <div className="flex flex-col ml-2 mt-[-6px]">
                   <div className="font-medium text-gray-700">

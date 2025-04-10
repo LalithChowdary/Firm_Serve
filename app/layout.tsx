@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "HealthSphere",
+  title: "FirmServe",
   description: "Our test application",
 };
 

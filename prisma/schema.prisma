@@ -143,6 +143,7 @@ model Staff {
   specialisation    String?             @db.VarChar(100)
   s_role            String              @db.VarChar(50)
   designation       String?             @db.VarChar(50)
+  image             String?             @db.VarChar(512)
   Appointment_Staff Appointment_Staff[]
   Expense           Expense[]
   staff_auth        User                @relation(fields: [staff_id], references: [id], onDelete: Cascade, map: "fk_staffauth_staff")
