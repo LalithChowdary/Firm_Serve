@@ -2,8 +2,23 @@
 import React, { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 
+interface appointments_table {
+  appointment_id: number;
+  purpose: string;
+  location: string;
+  appointment_date: string;
+  Cases?: {
+    title: string;
+  };
+  Appointment_Client?: {
+    Client?: {
+      name: string;
+    };
+  }[];
+}
+
 export default function StaffAppointments() {
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   const [appointmentList, setAppointmentList] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
@@ -32,23 +47,27 @@ export default function StaffAppointments() {
       });
   }, [status]);
 
-  const filteredAppointmentsList = appointmentList.filter((appoin: any) => {
-    // Search term filter
-    const matchesSearch =
-      searchTerm === "" ||
-      (appoin.purpose &&
-        appoin.purpose.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (appoin.Cases?.title &&
-        appoin.Cases.title.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      // Check if any client name matches
-      appoin.Appointment_Client?.some((clientCase: any) =>
-        clientCase.Client?.name
-          ?.toLowerCase()
-          .includes(searchTerm.toLowerCase())
-      );
+  const filteredAppointmentsList = appointmentList.filter(
+    (appoin: appointments_table) => {
+      // Search term filter
+      const matchesSearch =
+        searchTerm === "" ||
+        (appoin.purpose &&
+          appoin.purpose.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (appoin.Cases?.title &&
+          appoin.Cases.title
+            .toLowerCase()
+            .includes(searchTerm.toLowerCase())) ||
+        // Check if any client name matches
+        appoin.Appointment_Client?.some((clientCase) =>
+          clientCase.Client?.name
+            ?.toLowerCase()
+            .includes(searchTerm.toLowerCase())
+        );
 
-    return matchesSearch;
-  });
+      return matchesSearch;
+    }
+  );
 
   // Display loading or authentication states
   if (status === "loading") {
@@ -82,7 +101,7 @@ export default function StaffAppointments() {
               </p>
             </>
           ) : (
-            filteredAppointmentsList.map((appoin: any) => (
+            filteredAppointmentsList.map((appoin: appointments_table) => (
               <div
                 key={appoin.appointment_id}
                 className="grid grid-cols-1 grid-rows-2 mb-8"

@@ -1,6 +1,21 @@
 "use client";
 import React, { useState, useEffect } from "react";
 
+interface appointments_table {
+  appointment_id: string;
+  appointment_date: Date;
+  purpose: string;
+  location: string;
+  Appointment_Client?: {
+    Client?: {
+      name: string;
+    };
+  }[];
+  Cases?: {
+    title: string;
+  };
+}
+
 export default function Home() {
   const [appointmentList, setAppointmentList] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -22,23 +37,27 @@ export default function Home() {
       });
   }, []);
 
-  const filteredAppointmentsList = appointmentList.filter((appoin: any) => {
-    // Search term filter
-    const matchesSearch =
-      searchTerm === "" ||
-      (appoin.purpose &&
-        appoin.purpose.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (appoin.Cases?.title &&
-        appoin.Cases.title.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      // Check if any client name matches
-      appoin.Appointment_Client?.some((clientCase: any) =>
-        clientCase.Client?.name
-          ?.toLowerCase()
-          .includes(searchTerm.toLowerCase())
-      );
+  const filteredAppointmentsList = appointmentList.filter(
+    (appoin: appointments_table) => {
+      // Search term filter
+      const matchesSearch =
+        searchTerm === "" ||
+        (appoin.purpose &&
+          appoin.purpose.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (appoin.Cases?.title &&
+          appoin.Cases.title
+            .toLowerCase()
+            .includes(searchTerm.toLowerCase())) ||
+        // Check if any client name matches
+        appoin.Appointment_Client?.some((clientCase) =>
+          clientCase.Client?.name
+            ?.toLowerCase()
+            .includes(searchTerm.toLowerCase())
+        );
 
-    return matchesSearch;
-  });
+      return matchesSearch;
+    }
+  );
 
   return (
     <div className="bg-white min-h-screen p-8 grid grid-cols-2 grid-rows-1 ">
@@ -62,7 +81,7 @@ export default function Home() {
               </p>
             </>
           ) : (
-            filteredAppointmentsList.map((appoin: any) => (
+            filteredAppointmentsList.map((appoin: appointments_table) => (
               <div
                 key={appoin.appointment_id}
                 className="grid grid-cols-1 grid-rows-2 mb-8"
@@ -80,7 +99,15 @@ export default function Home() {
                     Location {appoin.location}
                   </div>
                   <div className="font-medium text-gray-700">
-                    Date {appoin.appointment_date}
+                    Date{" "}
+                    {new Date(appoin.appointment_date).toLocaleDateString(
+                      "en-US",
+                      {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                      }
+                    )}
                   </div>
                 </div>
                 <div className="mt-6 mb-[-10px]">

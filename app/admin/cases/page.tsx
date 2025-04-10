@@ -1,6 +1,21 @@
 "use client";
 import React, { useState, useEffect } from "react";
 
+interface case_table {
+  case_id: number;
+  title: string;
+  case_type: string;
+  status: string;
+  Client_Case: {
+    Client: {
+      client_auth: {
+        email: string;
+      };
+      name: string;
+    };
+  }[];
+}
+
 export default function Home() {
   const [caseList, setCaseList] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -29,7 +44,7 @@ export default function Home() {
       });
   }, []);
 
-  const filteredCaseList = caseList.filter((cases: any) => {
+  const filteredCaseList = caseList.filter((cases: case_table) => {
     console.log("Case object:", cases); // Log each case object
     // Search term filter
     const matchesSearch =
@@ -90,7 +105,7 @@ export default function Home() {
               </p>
             </>
           ) : (
-            filteredCaseList.map((cases: any) => (
+            filteredCaseList.map((cases: case_table) => (
               <div
                 key={cases.case_id}
                 className="grid grid-cols-1 grid-rows-2 mb-8"

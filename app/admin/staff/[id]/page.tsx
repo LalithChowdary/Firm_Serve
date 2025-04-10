@@ -3,15 +3,35 @@
 import React, { useState, useEffect, use } from "react";
 import { Button } from "@/components/ui/button";
 import Staffedit from "@/components/Admin/Staffedit";
-import { Loader2 } from "lucide-react";
+import Image from "next/image";
 
-interface Props {
-  params: { id: string };
+// Staff interface based on the Prisma schema
+interface StaffUser {
+  email: string;
 }
 
-export default function Staffinfo({ params }: Props) {
-  const id = (use(params as any) as { id: string }).id;
-  const [staff, setStaff] = useState<any>(null);
+interface Staff {
+  staff_id: string;
+  name: string;
+  experience: number;
+  phone_no: string;
+  bar_number?: string;
+  address: string;
+  specialisation?: string;
+  s_role: string;
+  designation?: string;
+  image?: string;
+  staff_auth?: StaffUser;
+}
+
+export default function Staffinfo({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  // Fix: Remove the use hook and directly use params.id
+  const { id } = use(params);
+  const [staff, setStaff] = useState<Staff | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [editTerm, setEditTerm] = useState("False");
 
@@ -24,7 +44,7 @@ export default function Staffinfo({ params }: Props) {
         }
         return res.json();
       })
-      .then((data) => {
+      .then((data: Staff) => {
         console.log("API response:", data);
         setStaff(data);
       })
@@ -79,10 +99,12 @@ export default function Staffinfo({ params }: Props) {
               <div className="flex-shrink-0 mb-4 md:mb-0">
                 <div className="h-36 w-36 mx-auto md:mx-0 rounded-full overflow-hidden border-4 border-white shadow-lg">
                   {staff.image ? (
-                    <img
+                    <Image
                       src={staff.image}
                       alt={`Photo of ${staff.name}`}
                       className="h-full w-full object-cover object-top"
+                      width={144} // Add width property (36*4)
+                      height={144} // Add height property (36*4)
                     />
                   ) : (
                     <div className="h-full w-full bg-gray-200 flex items-center justify-center">
@@ -208,7 +230,7 @@ export default function Staffinfo({ params }: Props) {
                   setLoading(true);
                   fetch(`/api/admin/staff/${id}`)
                     .then((res) => res.json())
-                    .then((data) => {
+                    .then((data: Staff) => {
                       setStaff(data);
                     })
                     .finally(() => setLoading(false));
@@ -222,15 +244,13 @@ export default function Staffinfo({ params }: Props) {
   );
 }
 
-function DetailItem({
-  label,
-  value,
-  icon,
-}: {
+interface DetailItemProps {
   label: string;
   value: string;
   icon: string;
-}) {
+}
+
+function DetailItem({ label, value, icon }: DetailItemProps) {
   return (
     <div className="flex items-center">
       <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">

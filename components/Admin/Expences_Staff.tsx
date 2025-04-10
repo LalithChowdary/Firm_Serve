@@ -1,6 +1,16 @@
 "use client";
-import { match } from "assert";
+
 import React, { useState, useEffect } from "react";
+
+interface expense_table {
+  expense_id: number;
+  description: string;
+  amount: string;
+  expense_date: string;
+  Staff?: {
+    name: string;
+  };
+}
 
 export default function Home() {
   const [ExpenceList, setExpenceList] = useState([]);
@@ -29,11 +39,11 @@ export default function Home() {
       });
   }, []);
 
-  const filteredExpenseList = ExpenceList.filter((Expense: any) => {
+  const filteredExpenseList = ExpenceList.filter((Expense: expense_table) => {
     // Search term filter
     const matchesSearch =
       searchTerm === "" ||
-      (Expense.Staff.name &&
+      (Expense.Staff?.name &&
         Expense.Staff.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (Expense.amount &&
         Expense.amount.toLowerCase().includes(searchTerm.toLowerCase()));
@@ -63,14 +73,14 @@ export default function Home() {
               </p>
             </>
           ) : (
-            filteredExpenseList.map((Expense: any) => (
+            filteredExpenseList.map((Expense: expense_table) => (
               <div
                 key={Expense.expense_id}
                 className="grid grid-cols-1 grid-rows-2 mb-8"
               >
                 <div>
                   <h2 className="text-2xl font-semibold text-gray-900">
-                    {Expense.Staff.name}{" "}
+                    {Expense.Staff?.name}{" "}
                   </h2>
                 </div>
                 <div className="flex flex-col ml-2 mt-[-14px]">

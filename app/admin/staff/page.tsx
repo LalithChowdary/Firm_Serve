@@ -2,6 +2,22 @@
 import Link from "next/link";
 import React, { useState, useEffect } from "react";
 
+interface Staff_Table {
+  staff_id: string;
+  name: string;
+  experience: number;
+  phone_no: string;
+  bar_number?: string;
+  address: string;
+  specialisation?: string;
+  s_role: string;
+  designation?: string;
+  image?: string;
+  staff_auth?: {
+    email: string;
+  };
+}
+
 export default function Home() {
   const [staffList, setStaffList] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -31,7 +47,7 @@ export default function Home() {
       });
   }, []);
 
-  const filteredStaffList = staffList.filter((staff: any) => {
+  const filteredStaffList = staffList.filter((staff: Staff_Table) => {
     // Search term filter
     const matchesSearch =
       searchTerm === "" ||
@@ -107,7 +123,7 @@ export default function Home() {
               </p>
             </>
           ) : (
-            filteredStaffList.map((staff: any) => (
+            filteredStaffList.map((staff: Staff_Table) => (
               <div
                 key={staff.staff_id}
                 className="grid grid-cols-1 grid-rows-2 mb-8"

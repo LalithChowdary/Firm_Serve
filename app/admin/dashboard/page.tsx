@@ -29,8 +29,37 @@ function Counter({ value }: { value: number }) {
   );
 }
 
+// Define types based on your schema
+interface TodayAppointment {
+  id: string;
+  purpose: string;
+  location: string;
+  date: string;
+  clients: string[];
+  staff: string[];
+}
+
+interface ActiveCase {
+  id: string;
+  title: string;
+  description: string;
+  client: string;
+  staff: string;
+}
+
+interface DashboardData {
+  appointmentsToday: number;
+  activeCases: number;
+  staffCount: number;
+  clientCount: number;
+  paidBills: number;
+  pendingBills: number;
+  todayAppointments: TodayAppointment[];
+  activeCasesList: ActiveCase[];
+}
+
 export default function Home() {
-  const [data, setData] = useState({
+  const [data, setData] = useState<DashboardData>({
     appointmentsToday: 0,
     activeCases: 0,
     staffCount: 0,
@@ -59,7 +88,9 @@ export default function Home() {
       <main className="flex-1 p-6">
         <header className="mb-6">
           <h1 className="text-3xl font-semibold">Welcome, Admin</h1>
-          <p className="text-gray-600">Here’s what’s happening today:</p>
+          <p className="text-gray-600">
+            Here&apos;s what&apos;s happening today:
+          </p>
         </header>
 
         <section className="mt-12 mb-6">
@@ -69,7 +100,7 @@ export default function Home() {
             transition={{ duration: 0.4 }}
             className="text-2xl font-bold mb-6  text-gray-800 border-b pb-2 border-gray-200"
           >
-            📅 Today’s Appointments
+            📅 Today&apos;s Appointments
           </motion.h2>
 
           {data.todayAppointments.length === 0 ? (
@@ -83,7 +114,7 @@ export default function Home() {
             </motion.p>
           ) : (
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {data.todayAppointments.map((appt: any, index: number) => (
+              {data.todayAppointments.map((appt, index) => (
                 <motion.div
                   key={appt.id}
                   initial={{ scale: 0.9, opacity: 0 }}
@@ -138,7 +169,7 @@ export default function Home() {
             </motion.p>
           ) : (
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {data.activeCasesList.map((c: any, index: number) => (
+              {data.activeCasesList.map((c, index) => (
                 <motion.div
                   key={c.id}
                   initial={{ scale: 0.9, opacity: 0 }}
@@ -169,7 +200,7 @@ export default function Home() {
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ duration: 0.5 }}
-            className="bg-white p-4 rounded-2xl shadow-lg p-5"
+            className="bg-white p-4 rounded-2xl shadow-lg "
           >
             <h3 className="text-lg font-semibold">Appointments Today</h3>
             <Counter value={data.appointmentsToday} />
@@ -179,7 +210,7 @@ export default function Home() {
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ delay: 0.2, duration: 0.5 }}
-            className="bg-white p-4 rounded-2xl shadow-lg p-5"
+            className="bg-white p-4 rounded-2xl shadow-lg "
           >
             <h3 className="text-lg font-semibold">Active Cases</h3>
             <Counter value={data.activeCases} />
@@ -189,7 +220,7 @@ export default function Home() {
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ delay: 0.4, duration: 0.5 }}
-            className="bg-white p-4 rounded-2xl shadow-lg p-5"
+            className="bg-white p-4 rounded-2xl shadow-lg"
           >
             <h3 className="text-lg font-semibold">Staff</h3>
             <Counter value={data.staffCount} />
@@ -199,7 +230,7 @@ export default function Home() {
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ delay: 0.4, duration: 0.5 }}
-            className="bg-white p-4 rounded-2xl shadow-lg p-5"
+            className="bg-white p-4 rounded-2xl shadow-lg "
           >
             <h3 className="text-lg font-semibold">Clients</h3>
             <Counter value={data.clientCount} />
@@ -208,7 +239,7 @@ export default function Home() {
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ delay: 0.4, duration: 0.5 }}
-            className="bg-white p-4 rounded-2xl shadow-lg p-5"
+            className="bg-white p-4 rounded-2xl shadow-lg "
           >
             <h3 className="text-lg font-semibold">Paid Bills</h3>
             <Counter value={data.paidBills} />
@@ -217,7 +248,7 @@ export default function Home() {
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ delay: 0.4, duration: 0.5 }}
-            className="bg-white p-4 rounded-2xl shadow-lg p-5"
+            className="bg-white p-4 rounded-2xl shadow-lg "
           >
             <h3 className="text-lg font-semibold">Unpaid Bills</h3>
             <Counter value={data.pendingBills} />

@@ -2,8 +2,20 @@
 import React, { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 
+interface billing_table {
+  billing_id: number;
+  amount: number;
+  payment_date: string;
+  due_date: string;
+  payment_mode: string;
+  status: string;
+  Cases?: {
+    title: string;
+  };
+}
+
 export default function ClientBilling() {
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   const [billingList, setBillingList] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("");
@@ -40,7 +52,7 @@ export default function ClientBilling() {
     }).format(amount);
   };
 
-  const filteredBillingList = billingList.filter((bill: any) => {
+  const filteredBillingList = billingList.filter((bill: billing_table) => {
     // Search term filter
     const matchesSearch =
       searchTerm === "" ||
@@ -62,7 +74,7 @@ export default function ClientBilling() {
   };
 
   // Get bill status safely
-  const getBillStatus = (bill: any) => {
+  const getBillStatus = (bill: billing_table) => {
     return (bill.status || "unknown").toLowerCase();
   };
 
@@ -100,7 +112,7 @@ export default function ClientBilling() {
               </p>
             </>
           ) : (
-            filteredBillingList.map((bill: any) => {
+            filteredBillingList.map((bill: billing_table) => {
               const billStatus = getBillStatus(bill);
               return (
                 <div
@@ -232,7 +244,8 @@ export default function ClientBilling() {
                     filteredBillingList
                       .filter((bill) => getBillStatus(bill) === "paid")
                       .reduce(
-                        (sum, bill: any) => sum + Number(bill.amount || 0),
+                        (sum, bill: billing_table) =>
+                          sum + Number(bill.amount || 0),
                         0
                       )
                   )}
@@ -247,7 +260,8 @@ export default function ClientBilling() {
                     filteredBillingList
                       .filter((bill) => getBillStatus(bill) === "pending")
                       .reduce(
-                        (sum, bill: any) => sum + Number(bill.amount || 0),
+                        (sum, bill: billing_table) =>
+                          sum + Number(bill.amount || 0),
                         0
                       )
                   )}

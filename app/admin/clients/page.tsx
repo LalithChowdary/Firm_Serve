@@ -1,6 +1,16 @@
 "use client";
 import React, { useState, useEffect } from "react";
 
+interface client_table {
+  client_id: number;
+  name: string;
+  address: string;
+  phone_no: string;
+  client_auth: {
+    email: string;
+  };
+}
+
 export default function Home() {
   const [clientList, setClientList] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -27,7 +37,7 @@ export default function Home() {
       });
   }, []);
 
-  const filteredClientList = clientList.filter((client: any) => {
+  const filteredClientList = clientList.filter((client: client_table) => {
     // Search term filter
     const matchesSearch =
       searchTerm === "" ||
@@ -63,7 +73,7 @@ export default function Home() {
               </p>
             </>
           ) : (
-            filteredClientList.map((client: any) => (
+            filteredClientList.map((client: client_table) => (
               <div
                 key={client.client_id}
                 className="grid grid-cols-1 grid-rows-2 mb-8"

@@ -2,8 +2,18 @@
 import React, { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 
+interface cases_table {
+  case_id: number;
+  title: string;
+  case_type: string;
+  status: string;
+  court_name: string;
+  filing_date: string;
+  verdict?: string;
+}
+
 export default function ClientCases() {
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   const [caseList, setCaseList] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCaseType, setSelectedCaseType] = useState("");
@@ -34,7 +44,7 @@ export default function ClientCases() {
       });
   }, [status]);
 
-  const filteredCaseList = caseList.filter((cases: any) => {
+  const filteredCaseList = caseList.filter((cases: cases_table) => {
     // Search term filter
     const matchesSearch =
       searchTerm === "" ||
@@ -98,7 +108,7 @@ export default function ClientCases() {
               </p>
             </>
           ) : (
-            filteredCaseList.map((cases: any) => (
+            filteredCaseList.map((cases: cases_table) => (
               <div
                 key={cases.case_id}
                 className="grid grid-cols-1 grid-rows-2 mb-8"

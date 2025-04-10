@@ -2,8 +2,18 @@
 import React, { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 
+interface expeces_table {
+  expense_id: number;
+  description: string;
+  amount: number;
+  expense_date: string;
+  Staff?: {
+    name: string;
+  };
+}
+
 export default function StaffExpenses() {
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   const [expenseList, setExpenseList] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
@@ -32,7 +42,7 @@ export default function StaffExpenses() {
       });
   }, [status]);
 
-  const filteredExpenseList = expenseList.filter((expense: any) => {
+  const filteredExpenseList = expenseList.filter((expense: expeces_table) => {
     // Search term filter
     const matchesSearch =
       searchTerm === "" ||
@@ -80,7 +90,7 @@ export default function StaffExpenses() {
               </p>
             </>
           ) : (
-            filteredExpenseList.map((expense: any) => (
+            filteredExpenseList.map((expense: expeces_table) => (
               <div
                 key={expense.expense_id}
                 className="grid grid-cols-1 grid-rows-2 mb-8"
@@ -153,7 +163,8 @@ export default function StaffExpenses() {
                 Total:{" "}
                 {formatCurrency(
                   filteredExpenseList.reduce(
-                    (sum: number, expense: any) => sum + Number(expense.amount),
+                    (sum: number, expense: expeces_table) =>
+                      sum + Number(expense.amount),
                     0
                   )
                 )}

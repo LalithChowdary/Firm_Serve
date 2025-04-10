@@ -1,6 +1,15 @@
 "use client";
-import { match } from "assert";
 import React, { useState, useEffect } from "react";
+
+interface billing_table {
+  Billing_id: number;
+  Client: {
+    name: string;
+  };
+  amount: string;
+  status: string;
+  Due_date: string;
+}
 
 export default function Home() {
   const [billingList, setBillingList] = useState([]);
@@ -30,7 +39,7 @@ export default function Home() {
       });
   }, []);
 
-  const filteredBillingList = billingList.filter((Bills: any) => {
+  const filteredBillingList = billingList.filter((Bills: billing_table) => {
     // Search term filter
     const matchesSearch =
       searchTerm === "" ||
@@ -85,7 +94,7 @@ export default function Home() {
               </p>
             </>
           ) : (
-            filteredBillingList.map((Bills: any) => (
+            filteredBillingList.map((Bills: billing_table) => (
               <div
                 key={Bills.Billing_id}
                 className="grid grid-cols-1 grid-rows-2 mb-8"

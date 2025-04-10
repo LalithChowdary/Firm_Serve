@@ -63,7 +63,9 @@ const Staffedit: React.FC<StaffeditProps> = ({
       if (res.ok) {
         console.log("Updated successfully:", data);
         alert("Staff updated successfully!");
-        onSuccess && onSuccess();
+        if (onSuccess) {
+          onSuccess();
+        }
       } else {
         console.error("Update failed:", data);
         setError(data.error || "Failed to update staff information");
