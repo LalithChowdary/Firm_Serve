@@ -82,6 +82,7 @@ export default function CaseDetailsPage({
         const data: CaseTable = await response.json();
         setCaseData(data);
       } catch (error) {
+        console.log(error);
         setCaseData(null);
       } finally {
         setLoading(false);
