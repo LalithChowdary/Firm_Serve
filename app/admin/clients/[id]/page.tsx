@@ -1,10 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, use } from "react";
-import { Button } from "@/components/ui/button";
-import Staffedit from "@/components/Admin/Staffedit";
 import Image from "next/image";
-import { Client } from "@prisma/client";
 
 interface StaffUser {
   email: string;
