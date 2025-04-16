@@ -2,17 +2,21 @@
 import React, { useState, useEffect } from "react";
 
 interface billing_table {
-  Billing_id: number;
+  billing_id: string; // Changed from Billing_id: number
   Client: {
     name: string;
   };
   amount: string;
   status: string;
-  Due_date: string;
+  due_date: string; // Changed from Due_date
 }
 
-export default function Home() {
-  const [billingList, setBillingList] = useState([]);
+interface BillingProps {
+  onSelectBilling?: (id: string) => void;
+}
+
+export default function Billing({ onSelectBilling }: BillingProps) {
+  const [billingList, setBillingList] = useState<billing_table[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("");
   const [loading, setLoading] = useState(true);
@@ -24,10 +28,9 @@ export default function Home() {
       .then((data) => {
         console.log("Fetched Billing data:", data);
 
-        // Log the first staff member to see actual field names
+        // Log the first billing item to see actual field names
         if (data && data.length > 0) {
           console.log("First billing fields:", Object.keys(data[0]));
-          console.log("Role value:", data[0].s_role);
         }
 
         setBillingList(data);
@@ -39,52 +42,45 @@ export default function Home() {
       });
   }, []);
 
-  const filteredBillingList = billingList.filter((Bills: billing_table) => {
+  const filteredBillingList = billingList.filter((bill: billing_table) => {
     // Search term filter
     const matchesSearch =
       searchTerm === "" ||
-      (Bills.Client.name &&
-        Bills.Client.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (Bills.amount &&
-        Bills.amount.toLowerCase().includes(searchTerm.toLowerCase()));
+      (bill.Client.name &&
+        bill.Client.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (bill.amount &&
+        bill.amount.toString().toLowerCase().includes(searchTerm.toLowerCase()));
 
-    // Specialization filter
+    // Status filter
     let matchesBill = selectedStatus === "";
-    if (!matchesBill && Bills.status) {
-      matchesBill = Bills.status
+    if (!matchesBill && bill.status) {
+      matchesBill = bill.status
         .toLowerCase()
         .includes(selectedStatus.toLowerCase());
     }
 
     return matchesSearch && matchesBill;
   });
-  const handleStatusChange = (spec: string) => {
-    console.log("Setting specialization to:", spec);
-    setSelectedStatus(spec);
+
+  const handleStatusChange = (status: string) => {
+    console.log("Setting status to:", status);
+    setSelectedStatus(status);
   };
 
-  // const handleRoleChange = (role: string) => {
-  //   console.log("Setting role to:", role);
-  //   setSelectedRole(role);
-  // };
-
   // Debug logging for state changes
-  console.log("Current specialization:", selectedStatus);
-  // console.log("Current role:", selectedRole);
+  console.log("Current status filter:", selectedStatus);
 
   return (
     <div className="bg-white min-h-screen p-8 grid grid-cols-2 grid-rows-1 ">
-      {/* Left side: Staff list */}
+      {/* Left side: Billing list */}
       <div className="pr-4 overflow-y-auto">
         <h1 className="text-3xl font-bold text-gray-800 mb-6 pl-2">
           Billing Overview
         </h1>
 
         <div className="pl-12">
-          {" "}
-          {/* Added padding container for all staff cards */}
           {loading ? (
-            <p>Loading staff...</p>
+            <p>Loading billings...</p>
           ) : filteredBillingList.length === 0 ? (
             <>
               <p>No Bills match your filters.</p>
@@ -94,27 +90,37 @@ export default function Home() {
               </p>
             </>
           ) : (
-            filteredBillingList.map((Bills: billing_table) => (
+            filteredBillingList.map((bill: billing_table) => (
               <div
-                key={Bills.Billing_id}
-                className="grid grid-cols-1 grid-rows-2 mb-8"
+                key={bill.billing_id}
+                className="grid grid-cols-1 grid-rows-2 mb-8 cursor-pointer hover:bg-gray-50 p-3 rounded-lg transition-colors"
+                onClick={() => onSelectBilling && onSelectBilling(bill.billing_id)}
               >
                 <div>
                   <h2 className="text-2xl font-semibold text-gray-900">
-                    {Bills.Client.name}{" "}
+                    {bill.Client.name}{" "}
                   </h2>
                 </div>
                 <div className="flex flex-col ml-2 mt-[-13px]">
                   <div className="font-medium text-gray-700">
-                    Amount {Bills.amount}
+                    Amount: ${bill.amount}
                   </div>
                   <div className="font-medium text-gray-700">
-                    Status {Bills.status}
+                    Status:{" "}
+                    <span
+                      className={`${
+                        bill.status.toLowerCase() === "paid"
+                          ? "text-green-600"
+                          : "text-amber-600"
+                      }`}
+                    >
+                      {bill.status}
+                    </span>
                   </div>
                   <div>
-                    {Bills.status != "Paid" && (
+                    {bill.status.toLowerCase() !== "paid" && (
                       <div className="font-medium text-gray-700">
-                        Due date {Bills.Due_date}
+                        Due date: {new Date(bill.due_date).toLocaleDateString()}
                       </div>
                     )}
                   </div>
@@ -166,77 +172,39 @@ export default function Home() {
             </div>
 
             {/* Filters */}
-            <div className="grid grid-cols-2 gap-6">
-              {/* Specialization */}
+            <div className="grid grid-cols-1 gap-6">
+              {/* Status Filter */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Specialization
+                  Payment Status
                 </label>
                 <div className="space-y-2">
-                  {["", "Paid", "Pending"].map((spec) => (
-                    <div className="flex items-center" key={spec || "all"}>
+                  {["", "Paid", "Pending", "Overdue"].map((status) => (
+                    <div className="flex items-center" key={status || "all"}>
                       <div className="relative flex items-center mr-2">
                         <input
                           type="radio"
-                          id={`spec-${spec || "all"}`}
-                          name="specialization"
-                          value={spec}
-                          checked={selectedStatus === spec}
-                          onChange={() => handleStatusChange(spec)}
+                          id={`status-${status || "all"}`}
+                          name="status"
+                          value={status}
+                          checked={selectedStatus === status}
+                          onChange={() => handleStatusChange(status)}
                           className="appearance-none w-4 h-4 rounded-full border border-black checked:bg-black checked:border-black focus:ring-0 focus:outline-none focus:border-black"
                           style={{ accentColor: "black" }}
                         />
                       </div>
                       <label
-                        htmlFor={`spec-${spec || "all"}`}
+                        htmlFor={`status-${status || "all"}`}
                         className="text-sm text-gray-700 dark:text-gray-300 cursor-pointer"
                       >
-                        {spec === ""
+                        {status === ""
                           ? "All"
-                          : spec.charAt(0).toUpperCase() + spec.slice(1)}
+                          : status.charAt(0).toUpperCase() + status.slice(1)}
                       </label>
                     </div>
                   ))}
                 </div>
               </div>
-
-              {/* Role
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Role
-                </label>
-                <div className="space-y-2">
-                  {[
-                    "",
-                    "Lawyer",
-                    "Paralegal",
-                    "Secretary",
-                    "Accountant",
-                    "IT Support",
-                  ].map((role) => (
-                    <div className="flex items-center" key={role || "all"}>
-                      <div className="relative flex items-center mr-2">
-                        <input
-                          type="radio"
-                          id={`role-${role || "all"}`}
-                          name="role"
-                          value={role.toLowerCase()}
-                          checked={selectedRole === role.toLowerCase()}
-                          onChange={() => handleRoleChange(role.toLowerCase())}
-                          className="appearance-none w-4 h-4 rounded-full border border-black checked:bg-black checked:border-black focus:ring-0 focus:outline-none focus:border-black"
-                          style={{ accentColor: "black" }}
-                        />
-                      </div>
-                      <label
-                        htmlFor={`role-${role || "all"}`}
-                        className="text-sm text-gray-700 dark:text-gray-300 cursor-pointer"
-                      >
-                        {role === "" ? "All" : role}
-                      </label>
-                    </div>
-                  ))}
-                </div>
-              </div> */}
             </div>
           </div>
         </div>

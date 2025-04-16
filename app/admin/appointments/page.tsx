@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
 
 interface appointments_table {
   appointment_id: string;
@@ -86,11 +87,13 @@ export default function Home() {
                 key={appoin.appointment_id}
                 className="grid grid-cols-1 grid-rows-2 mb-8"
               >
-                <div>
-                  <h2 className="text-2xl font-semibold text-gray-900">
-                    {appoin.purpose}{" "}
-                  </h2>
-                </div>
+                <Link href={`/admin/appointments/${appoin.appointment_id}`}>
+                  <div>
+                    <h2 className="text-2xl font-semibold text-gray-900">
+                      {appoin.purpose}{" "}
+                    </h2>
+                  </div>
+                </Link>
                 <div className="flex flex-col ml-2 mt-[-6px]">
                   <div className="font-medium text-gray-700">
                     For the case {appoin.Cases?.title}
