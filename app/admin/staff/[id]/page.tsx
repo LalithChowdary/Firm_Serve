@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import Staffedit from "@/components/Admin/Staffedit";
 import Image from "next/image";
 
-// Staff interface based on the Prisma schema
+// Existing interface for Staff
 interface StaffUser {
   email: string;
 }
@@ -22,6 +22,73 @@ interface Staff {
   designation?: string;
   image?: string;
   staff_auth?: StaffUser;
+  cases?: {
+    case_id: string;
+    title: string;
+    status: string;
+    next_hearing_date?: Date;
+  }[];
+  appointments?: {
+    appointment_id: string;
+    title: string;
+    date: string;
+    time: string;
+    location?: string;
+    status: string;
+  }[];
+  clients?: {
+    client_id: string;
+    name: string;
+    phone_no: string;
+    address?: string;
+    email?: string;
+  }[];
+}
+
+// Interfaces for your API response
+interface StaffCaseRel {
+  Cases: {
+    case_id: string;
+    title: string;
+    status: string;
+    filing_date?: Date;
+    Client_Case?: {
+      Client: {
+        client_id: string;
+        name: string;
+        phone_no: string;
+        address: string;
+        client_auth?: {
+          email: string;
+        };
+      };
+    }[];
+  };
+}
+
+interface AppointmentStaffRel {
+  Appointment: {
+    appointment_id: string;
+    purpose: string;
+    appointment_date: string;
+    location?: string;
+  };
+}
+
+interface StaffAPIResponse {
+  staff_id: string;
+  name: string;
+  experience: number;
+  phone_no: string;
+  bar_number?: string;
+  address: string;
+  specialisation?: string;
+  s_role: string;
+  designation?: string;
+  image?: string;
+  staff_auth?: StaffUser;
+  Staff_Case?: StaffCaseRel[];
+  Appointment_Staff?: AppointmentStaffRel[];
 }
 
 export default function Staffinfo({
@@ -29,29 +96,97 @@ export default function Staffinfo({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  // Fix: Remove the use hook and directly use params.id
+  // Get the staff ID directly
   const { id } = use(params);
   const [staff, setStaff] = useState<Staff | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [editTerm, setEditTerm] = useState("False");
 
   useEffect(() => {
-    console.log("Fetching staff with ID:", id);
-    fetch(`/api/admin/staff/${id}`)
-      .then((res) => {
-        if (!res.ok) {
-          throw new Error(`API error: ${res.status}`);
+    const fetchData = async () => {
+      try {
+        console.log("Fetching staff with ID:", id);
+        const response = await fetch(`/api/admin/staff/${id}`);
+        if (!response.ok) {
+          throw new Error(`API error: ${response.status}`);
         }
-        return res.json();
-      })
-      .then((data: Staff) => {
+
+        // Typed API response
+        const data: StaffAPIResponse = await response.json();
         console.log("API response:", data);
-        setStaff(data);
-      })
-      .catch((error) => {
+
+        // Transform Staff_Case into cases[]
+        const transformedCases =
+          data.Staff_Case?.map((staffCase) => ({
+            case_id: staffCase.Cases.case_id,
+            title: staffCase.Cases.title,
+            status: staffCase.Cases.status,
+            next_hearing_date: staffCase.Cases.filing_date,
+          })) || [];
+
+        // Transform Appointment_Staff into appointments[]
+        const transformedAppointments =
+          data.Appointment_Staff?.map((staffAppointment) => ({
+            appointment_id: staffAppointment.Appointment.appointment_id,
+            title: staffAppointment.Appointment.purpose,
+            date: new Date(
+              staffAppointment.Appointment.appointment_date
+            ).toLocaleDateString(),
+            time: new Date(
+              staffAppointment.Appointment.appointment_date
+            ).toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            }),
+            location: staffAppointment.Appointment.location,
+            status: "Scheduled",
+          })) || [];
+
+        // Extract unique clients from cases
+        const clientsMap = new Map();
+        data.Staff_Case?.forEach((staffCase) => {
+          staffCase.Cases.Client_Case?.forEach((clientCase) => {
+            const client = clientCase.Client;
+            if (!clientsMap.has(client.client_id)) {
+              clientsMap.set(client.client_id, {
+                client_id: client.client_id,
+                name: client.name,
+                phone_no: client.phone_no,
+                address: client.address,
+                email: client.client_auth?.email,
+              });
+            }
+          });
+        });
+        const transformedClients = Array.from(clientsMap.values());
+
+        // Build final Staff object
+        const updatedStaff: Staff = {
+          staff_id: data.staff_id,
+          name: data.name,
+          experience: data.experience,
+          phone_no: data.phone_no,
+          bar_number: data.bar_number,
+          address: data.address,
+          specialisation: data.specialisation,
+          s_role: data.s_role,
+          designation: data.designation,
+          image: data.image,
+          staff_auth: data.staff_auth,
+          cases: transformedCases,
+          appointments: transformedAppointments,
+          clients: transformedClients,
+        };
+
+        setStaff(updatedStaff);
+      } catch (error) {
         console.error("Fetch error:", error);
-      })
-      .finally(() => setLoading(false));
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
   }, [id]);
 
   function handleclick() {
@@ -165,6 +300,177 @@ export default function Staffinfo({
                 value={staff.designation || "N/A"}
                 icon="🏷️"
               />
+            </div>
+            {/* Clients Section */}
+            <div className="mt-12">
+              <h2 className="text-2xl font-semibold text-gray-900 mb-6">
+                Associated Clients
+              </h2>
+              <div className="bg-white rounded-lg shadow overflow-hidden">
+                {staff.clients && staff.clients.length > 0 ? (
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Name
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Phone
+                          </th>
+
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Address
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {staff.clients.map((client) => (
+                          <tr
+                            key={client.client_id}
+                            className="hover:bg-gray-50"
+                          >
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
+                              {client.name}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                              {client.phone_no}
+                            </td>
+
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                              {client.address || "N/A"}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <p className="text-gray-500 text-center py-4">
+                    No clients associated with this staff member
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Cases Section */}
+            <div className="mt-12">
+              <h2 className="text-2xl font-semibold text-gray-900 mb-6">
+                All Cases
+              </h2>
+              <div className="bg-white rounded-lg shadow overflow-hidden">
+                {staff.cases && staff.cases.length > 0 ? (
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Title
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Status
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Filing Date
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {staff.cases.map((case_) => (
+                          <tr key={case_.case_id} className="hover:bg-gray-50">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                              {case_.title}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <span
+                                className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                ${
+                                  case_.status === "Active"
+                                    ? "bg-green-100 text-green-800"
+                                    : case_.status === "Pending"
+                                    ? "bg-yellow-100 text-yellow-800"
+                                    : case_.status === "Closed"
+                                    ? "bg-red-100 text-red-800"
+                                    : "bg-gray-100 text-gray-800"
+                                }`}
+                              >
+                                {case_.status}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                              {case_.next_hearing_date
+                                ? new Date(
+                                    case_.next_hearing_date
+                                  ).toLocaleDateString()
+                                : "Not scheduled"}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <p className="text-gray-500 text-center py-4">
+                    No cases found
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Appointments Section */}
+            <div className="mt-12 mb-8">
+              <h2 className="text-2xl font-semibold text-gray-900 mb-6">
+                All Appointments
+              </h2>
+              <div className="bg-white rounded-lg shadow overflow-hidden">
+                {staff.appointments && staff.appointments.length > 0 ? (
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Title
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Date
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Time
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Location
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {staff.appointments.map((appointment) => (
+                          <tr
+                            key={appointment.appointment_id}
+                            className="hover:bg-gray-50"
+                          >
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                              {appointment.title}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                              {appointment.date}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                              {appointment.time}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                              {appointment.location}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <p className="text-gray-500 text-center py-4">
+                    No appointments found
+                  </p>
+                )}
+              </div>
             </div>
           </div>
         </div>

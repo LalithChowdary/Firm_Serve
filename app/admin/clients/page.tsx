@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
 
 interface client_table {
   client_id: number;
@@ -78,11 +79,13 @@ export default function Home() {
                 key={client.client_id}
                 className="grid grid-cols-1 grid-rows-2 mb-8"
               >
-                <div>
-                  <h2 className="text-2xl font-semibold text-gray-900">
-                    {client.name}{" "}
-                  </h2>
-                </div>
+                <Link href={`/admin/clients/${client.client_id}`}>
+                  <div>
+                    <h2 className="text-2xl font-semibold text-gray-900">
+                      {client.name}{" "}
+                    </h2>
+                  </div>
+                </Link>
                 <div className="flex flex-col ml-2 mt-[-13px]">
                   <div className="font-medium text-gray-700">
                     Address {client.address}

@@ -10,22 +10,45 @@ export async function GET(
     const resolvedParams = await params;
     const staff = await prisma.staff.findUnique({
       where: { staff_id: resolvedParams.id },
-      include: { staff_auth: true },
+      include: {
+        staff_auth: true,
+        Staff_Case: {
+          include: {
+            Cases: {
+              include: {
+                // Include client relationship properly through Client_Case
+                Client_Case: {
+                  include: {
+                    Client: true,
+                  }
+                }
+              }
+            }
+          },
+        },
+        Appointment_Staff: {
+          include: {
+            Appointment: true,
+          },
+        },
+      },
     });
+
 
     return NextResponse.json(staff);
   } catch (error) {
+    console.error("Error in GET /api/admin/staff/[id]:", error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
     return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }
 
+// PATCH method remains unchanged
 export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    // Await the params before using its properties
     const resolvedParams = await params;
     const data = await request.json();
     const updatedStaff = await prisma.staff.update({
