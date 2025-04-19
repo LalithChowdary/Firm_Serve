@@ -64,6 +64,36 @@ function DetailItem({ label, value, icon }: DetailItemProps) {
   );
 }
 
+// Mobile card component for tables
+function MobileCard({
+  title,
+  items,
+}: {
+  title: string;
+  items: { label: string; value: React.ReactNode }[];
+}) {
+  return (
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4">
+      <h3 className="font-semibold text-gray-900 mb-3">{title}</h3>
+      <dl>
+        {items.map((item, index) => (
+          <div
+            key={index}
+            className={`${
+              index > 0 ? "mt-3 pt-3 border-t border-gray-100" : ""
+            }`}
+          >
+            <dt className="text-xs font-medium text-gray-500 uppercase">
+              {item.label}
+            </dt>
+            <dd className="mt-1 text-sm text-gray-900">{item.value}</dd>
+          </div>
+        ))}
+      </dl>
+    </div>
+  );
+}
+
 // --- Main Page ---
 export default function AppointmentDetailsPage({
   params,
@@ -131,29 +161,27 @@ export default function AppointmentDetailsPage({
   const rawCases = appointmentData?.Cases || [];
   const cases = Array.isArray(rawCases) ? rawCases : [rawCases];
 
-  // Debug section - will help you see what's coming from the API
-
   console.log("Cases found:", cases);
 
   return (
-    <div className="min-h-screen py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen py-6 md:py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-5xl mx-auto">
         {/* Card container */}
         <div className="bg-white rounded-xl shadow-lg overflow-hidden">
           {/* Header with subtle gradient */}
-          <div className="bg-gradient-to-r from-gray-800 to-gray-900 h-32"></div>
+          <div className="bg-gradient-to-r from-gray-800 to-gray-900 h-24 md:h-32"></div>
 
           {/* Content area with negative margin to overlap header */}
-          <div className="relative px-6 pb-8 -mt-16">
+          <div className="relative px-4 md:px-6 pb-8 -mt-16">
             {/* Appointment Title */}
-            <div className="flex flex-col md:flex-row mb-8">
-              <div className="flex-shrink-0 mb-4 md:mb-0">
-                <div className="h-36 w-36 mx-auto md:mx-0 rounded-full overflow-hidden border-4 border-white shadow-lg bg-gray-200 flex items-center justify-center">
-                  <span className="text-gray-500 text-4xl">📅</span>
+            <div className="flex flex-col mb-8">
+              <div className="flex-shrink-0 mb-4">
+                <div className="h-24 w-24 md:h-36 md:w-36 mx-auto rounded-full overflow-hidden border-4 border-white shadow-lg bg-gray-200 flex items-center justify-center">
+                  <span className="text-gray-500 text-3xl md:text-4xl">📅</span>
                 </div>
               </div>
-              <div className="md:ml-8 text-center md:text-left mt-4">
-                <h1 className="text-3xl font-bold text-white mt-4">
+              <div className="text-center mt-2 md:mt-4">
+                <h1 className="text-2xl md:text-3xl font-bold text-white">
                   {appointmentData.purpose}
                 </h1>
               </div>
@@ -175,11 +203,33 @@ export default function AppointmentDetailsPage({
             </div>
 
             {/* Associated Clients */}
-            <div className="mt-12">
-              <h2 className="text-2xl font-semibold text-gray-900 mb-6">
+            <div className="mt-10 md:mt-12">
+              <h2 className="text-xl md:text-2xl font-semibold text-gray-900 mb-4 md:mb-6">
                 Associated Clients
               </h2>
-              <div className="bg-white rounded-lg shadow overflow-hidden">
+
+              {/* Mobile view - cards */}
+              <div className="md:hidden">
+                {clients.length > 0 ? (
+                  clients.map((client) => (
+                    <MobileCard
+                      key={client.client_id}
+                      title={client.name}
+                      items={[
+                        { label: "Phone", value: client.phone_no },
+                        { label: "Address", value: client.address ?? "N/A" },
+                      ]}
+                    />
+                  ))
+                ) : (
+                  <p className="text-gray-500 text-center py-4">
+                    No clients associated with this appointment
+                  </p>
+                )}
+              </div>
+
+              {/* Desktop view - table */}
+              <div className="hidden md:block bg-white rounded-lg shadow overflow-hidden">
                 {clients.length > 0 ? (
                   <div className="overflow-x-auto">
                     <table className="min-w-full divide-y divide-gray-200">
@@ -240,11 +290,33 @@ export default function AppointmentDetailsPage({
             </div>
 
             {/* Associated Staff */}
-            <div className="mt-12">
-              <h2 className="text-2xl font-semibold text-gray-900 mb-6">
+            <div className="mt-10 md:mt-12">
+              <h2 className="text-xl md:text-2xl font-semibold text-gray-900 mb-4 md:mb-6">
                 Associated Staff
               </h2>
-              <div className="bg-white rounded-lg shadow overflow-hidden">
+
+              {/* Mobile view - cards */}
+              <div className="md:hidden">
+                {staffList.length > 0 ? (
+                  staffList.map((staff) => (
+                    <MobileCard
+                      key={staff.staff_id}
+                      title={staff.name}
+                      items={[
+                        { label: "Phone", value: staff.phone_no },
+                        { label: "Role", value: staff.s_role ?? "N/A" },
+                      ]}
+                    />
+                  ))
+                ) : (
+                  <p className="text-gray-500 text-center py-4">
+                    No staff associated with this appointment
+                  </p>
+                )}
+              </div>
+
+              {/* Desktop view - table */}
+              <div className="hidden md:block bg-white rounded-lg shadow overflow-hidden">
                 {staffList.length > 0 ? (
                   <div className="overflow-x-auto">
                     <table className="min-w-full divide-y divide-gray-200">
@@ -302,11 +374,28 @@ export default function AppointmentDetailsPage({
             </div>
 
             {/* Associated Cases */}
-            <div className="mt-12">
-              <h2 className="text-2xl font-semibold text-gray-900 mb-6">
+            <div className="mt-10 md:mt-12">
+              <h2 className="text-xl md:text-2xl font-semibold text-gray-900 mb-4 md:mb-6">
                 Associated Cases
               </h2>
-              <div className="bg-white rounded-lg shadow overflow-hidden">
+
+              {/* Mobile view - cards */}
+              <div className="md:hidden">
+                {cases.map((caseItem) => (
+                  <MobileCard
+                    key={caseItem.case_id}
+                    title={caseItem.title || "Untitled Case"}
+                    items={[
+                      { label: "Court", value: caseItem.court_name || "N/A" },
+                      { label: "Type", value: caseItem.case_type || "N/A" },
+                      { label: "Status", value: caseItem.status || "N/A" },
+                    ]}
+                  />
+                ))}
+              </div>
+
+              {/* Desktop view - table */}
+              <div className="hidden md:block bg-white rounded-lg shadow overflow-hidden">
                 <div className="overflow-x-auto">
                   <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">

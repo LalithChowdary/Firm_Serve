@@ -264,23 +264,25 @@ export default function Dashboard() {
 
   return (
     <div className="flex min-h-screen flex-col">
-      <main className="flex-1 p-6">
+      <main className="flex-1 p-4 md:p-6">
         <header className="mb-6">
-          <h1 className="text-3xl font-semibold">Welcome, Admin</h1>
+          <h1 className="text-2xl md:text-3xl font-semibold">Welcome, Admin</h1>
           <p className="text-gray-600">
             Here&apos;s what&apos;s happening today:
           </p>
         </header>
 
         {/* Statistics Section */}
-        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
+        <section className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-6 mb-8 md:mb-10">
           <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ duration: 0.5 }}
-            className="bg-white p-4 rounded-2xl shadow-lg"
+            className="bg-white p-3 md:p-4 rounded-xl md:rounded-2xl shadow-md md:shadow-lg"
           >
-            <h3 className="text-lg font-semibold">Appointments Today</h3>
+            <h3 className="text-sm md:text-lg font-semibold">
+              Appointments Today
+            </h3>
             <Counter value={data.appointmentsToday} />
           </motion.div>
 
@@ -288,9 +290,9 @@ export default function Dashboard() {
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ delay: 0.1, duration: 0.5 }}
-            className="bg-white p-4 rounded-2xl shadow-lg"
+            className="bg-white p-3 md:p-4 rounded-xl md:rounded-2xl shadow-md md:shadow-lg"
           >
-            <h3 className="text-lg font-semibold">Active Cases</h3>
+            <h3 className="text-sm md:text-lg font-semibold">Active Cases</h3>
             <Counter value={data.activeCases} />
           </motion.div>
 
@@ -298,9 +300,9 @@ export default function Dashboard() {
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ delay: 0.2, duration: 0.5 }}
-            className="bg-white p-4 rounded-2xl shadow-lg"
+            className="bg-white p-3 md:p-4 rounded-xl md:rounded-2xl shadow-md md:shadow-lg"
           >
-            <h3 className="text-lg font-semibold">Staff</h3>
+            <h3 className="text-sm md:text-lg font-semibold">Staff</h3>
             <Counter value={data.staffCount} />
           </motion.div>
 
@@ -308,9 +310,9 @@ export default function Dashboard() {
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ delay: 0.3, duration: 0.5 }}
-            className="bg-white p-4 rounded-2xl shadow-lg"
+            className="bg-white p-3 md:p-4 rounded-xl md:rounded-2xl shadow-md md:shadow-lg"
           >
-            <h3 className="text-lg font-semibold">Clients</h3>
+            <h3 className="text-sm md:text-lg font-semibold">Clients</h3>
             <Counter value={data.clientCount} />
           </motion.div>
 
@@ -318,9 +320,9 @@ export default function Dashboard() {
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ delay: 0.4, duration: 0.5 }}
-            className="bg-white p-4 rounded-2xl shadow-lg"
+            className="bg-white p-3 md:p-4 rounded-xl md:rounded-2xl shadow-md md:shadow-lg"
           >
-            <h3 className="text-lg font-semibold">Paid Bills</h3>
+            <h3 className="text-sm md:text-lg font-semibold">Paid Bills</h3>
             <Counter value={data.paidBills} />
           </motion.div>
 
@@ -328,20 +330,20 @@ export default function Dashboard() {
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ delay: 0.5, duration: 0.5 }}
-            className="bg-white p-4 rounded-2xl shadow-lg"
+            className="bg-white p-3 md:p-4 rounded-xl md:rounded-2xl shadow-md md:shadow-lg"
           >
-            <h3 className="text-lg font-semibold">Unpaid Bills</h3>
+            <h3 className="text-sm md:text-lg font-semibold">Unpaid Bills</h3>
             <Counter value={data.pendingBills} />
           </motion.div>
         </section>
 
         {/* Today's Appointments */}
-        <section className="mt-12 mb-10">
+        <section className="mt-8 md:mt-12 mb-8 md:mb-10">
           <motion.h2
             initial={{ y: 10, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ duration: 0.4 }}
-            className="text-2xl font-bold mb-6 text-gray-800 border-b pb-2 border-gray-200"
+            className="text-xl md:text-2xl font-bold mb-4 md:mb-6 text-gray-800 border-b pb-2 border-gray-200"
           >
             📅 Today&apos;s Appointments
           </motion.h2>
@@ -351,42 +353,42 @@ export default function Dashboard() {
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ duration: 0.4 }}
-              className="text-gray-500 text-lg mb-6"
+              className="text-gray-500 text-base md:text-lg mb-4 md:mb-6"
             >
               No appointments scheduled for today.
             </motion.p>
           ) : (
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-4 md:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
               {data.todayAppointments.map((appt, index) => (
                 <motion.div
                   key={appt.id}
                   initial={{ scale: 0.9, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   transition={{ delay: index * 0.1, duration: 0.4 }}
-                  className="bg-white rounded-2xl shadow-md hover:shadow-xl transition-shadow duration-300 p-5 border border-gray-100"
+                  className="bg-white rounded-xl md:rounded-2xl shadow-md hover:shadow-xl transition-shadow duration-300 p-4 md:p-5 border border-gray-100"
                 >
                   <div className="flex items-center justify-between mb-2">
-                    <h3 className="text-xl font-semibold text-indigo-600">
+                    <h3 className="text-lg md:text-xl font-semibold text-indigo-600 truncate">
                       {appt.purpose}
                     </h3>
-                    <span className="text-xs text-gray-500">
+                    <span className="text-xs text-gray-500 whitespace-nowrap ml-2">
                       {new Date(appt.date).toLocaleTimeString([], {
                         hour: "2-digit",
                         minute: "2-digit",
                       })}
                     </span>
                   </div>
-                  <p className="text-sm text-gray-700 mb-1">
+                  <p className="text-xs md:text-sm text-gray-700 mb-1">
                     📍 <span className="font-medium">{appt.location}</span>
                   </p>
                   {appt.clients?.length > 0 && (
-                    <p className="text-sm text-gray-700 mb-1">
+                    <p className="text-xs md:text-sm text-gray-700 mb-1">
                       👤 <strong>Clients:</strong> {appt.clients.join(", ")}
                     </p>
                   )}
                   {appt.staff?.length > 0 && (
-                    <p className="text-sm text-gray-700">
-                      🧑‍⚕️ <strong>Staff:</strong> {appt.staff.join(", ")}
+                    <p className="text-xs md:text-sm text-gray-700">
+                      🧑‍⚖️ <strong>Staff:</strong> {appt.staff.join(", ")}
                     </p>
                   )}
                 </motion.div>
@@ -395,15 +397,15 @@ export default function Dashboard() {
           )}
         </section>
 
-        {/* Active Cases - Two-Row Grid */}
-        <section className="mt-10 mb-8">
+        {/* Active Cases - Responsive Grid */}
+        <section className="mt-8 md:mt-10 mb-6 md:mb-8">
           <motion.h2
             initial={{ y: 10, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ duration: 0.4 }}
-            className="text-2xl font-bold text-gray-800 mb-6 border-b pb-2 border-gray-200"
+            className="text-xl md:text-2xl font-bold text-gray-800 mb-4 md:mb-6 border-b pb-2 border-gray-200"
           >
-            🩺 Active Cases
+            ⚖️ Active Cases
           </motion.h2>
 
           {!data.activeCasesList || data.activeCasesList.length === 0 ? (
@@ -411,33 +413,31 @@ export default function Dashboard() {
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ duration: 0.4 }}
-              className="text-gray-500 text-lg"
+              className="text-gray-500 text-base md:text-lg"
             >
               No active cases at the moment.
             </motion.p>
           ) : (
-            <div className="overflow-x-auto pb-4">
-              <div className="grid grid-rows-2 grid-flow-col gap-4 auto-cols-max">
-                {data.activeCasesList.map((c, index) => (
-                  <motion.div
-                    key={c.id}
-                    initial={{ scale: 0.9, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    transition={{ delay: index * 0.1, duration: 0.4 }}
-                    className="w-64 h-40 flex-shrink-0 bg-white rounded-2xl shadow-md hover:shadow-xl transition-shadow duration-300 p-5 border border-gray-100"
-                  >
-                    <h3 className="text-xl font-semibold mb-2 truncate">
-                      {c.title}
-                    </h3>
-                    <p className="text-sm text-gray-700 mb-2">
-                      👤 <strong>Client:</strong> {c.client}
-                    </p>
-                    <p className="text-sm text-gray-700">
-                      🧑‍⚕️ <strong>Staff:</strong> {c.staff}
-                    </p>
-                  </motion.div>
-                ))}
-              </div>
+            <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {data.activeCasesList.map((c, index) => (
+                <motion.div
+                  key={c.id}
+                  initial={{ scale: 0.9, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ delay: index * 0.1, duration: 0.4 }}
+                  className="bg-white rounded-xl md:rounded-2xl shadow-md hover:shadow-xl transition-shadow duration-300 p-4 md:p-5 border border-gray-100"
+                >
+                  <h3 className="text-lg md:text-xl font-semibold mb-2 truncate">
+                    {c.title}
+                  </h3>
+                  <p className="text-xs md:text-sm text-gray-700 mb-2">
+                    👤 <strong>Client:</strong> {c.client}
+                  </p>
+                  <p className="text-xs md:text-sm text-gray-700">
+                    🧑‍⚖️ <strong>Staff:</strong> {c.staff}
+                  </p>
+                </motion.div>
+              ))}
             </div>
           )}
         </section>
