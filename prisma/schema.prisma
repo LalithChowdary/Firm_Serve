@@ -14,7 +14,7 @@ model Appointment {
   appointment_date   DateTime             @db.DateTime(0)
   case_id            String
   status             String?              @db.VarChar(40)
-  Cases              Cases                @relation(fields: [case_id], references: [case_id], onDelete: NoAction, map: "fk_appointment_case")
+  Cases              Cases                @relation(fields: [case_id], references: [case_id], onDelete: Cascade, map: "fk_appointment_case")
   Appointment_Client Appointment_Client[]
   Appointment_Staff  Appointment_Staff[]
 
@@ -24,8 +24,8 @@ model Appointment {
 model Appointment_Client {
   appointment_id String
   client_id      String
-  Appointment    Appointment @relation(fields: [appointment_id], references: [appointment_id], onDelete: NoAction, map: "fk_appclient_appointment")
-  Client         Client      @relation(fields: [client_id], references: [client_id], onDelete: NoAction, map: "fk_appclient_client")
+  Appointment    Appointment @relation(fields: [appointment_id], references: [appointment_id], onDelete: Cascade, map: "fk_appclient_appointment")
+  Client         Client      @relation(fields: [client_id], references: [client_id], onDelete: Cascade, map: "fk_appclient_client")
 
   @@id([appointment_id, client_id])
   @@index([client_id], map: "fk_appclient_client")
@@ -34,8 +34,8 @@ model Appointment_Client {
 model Appointment_Staff {
   appointment_id String
   staff_id       String
-  Appointment    Appointment @relation(fields: [appointment_id], references: [appointment_id], onDelete: NoAction, map: "fk_appstaff_appointment")
-  Staff          Staff       @relation(fields: [staff_id], references: [staff_id], onDelete: NoAction, map: "fk_appstaff_staff")
+  Appointment    Appointment @relation(fields: [appointment_id], references: [appointment_id], onDelete: Cascade, map: "fk_appstaff_appointment")
+  Staff          Staff       @relation(fields: [staff_id], references: [staff_id], onDelete: Cascade, map: "fk_appstaff_staff")
 
   @@id([appointment_id, staff_id])
   @@index([staff_id], map: "fk_appstaff_staff")
@@ -50,8 +50,8 @@ model Billing {
   amount       Decimal  @db.Decimal(10, 2)
   client_id    String
   case_id      String
-  Cases        Cases    @relation(fields: [case_id], references: [case_id], onDelete: NoAction, map: "fk_billing_case")
-  Client       Client   @relation(fields: [client_id], references: [client_id], onDelete: NoAction, map: "fk_billing_client")
+  Cases        Cases    @relation(fields: [case_id], references: [case_id], onDelete: Cascade, map: "fk_billing_case")
+  Client       Client   @relation(fields: [client_id], references: [client_id], onDelete: Cascade, map: "fk_billing_client")
 
   @@index([case_id], map: "fk_billing_case")
   @@index([client_id], map: "fk_billing_client")
@@ -80,15 +80,15 @@ model Client {
   status             String?              @db.VarChar(40)
   Appointment_Client Appointment_Client[]
   Billing            Billing[]
-  client_auth        User                 @relation(fields: [client_id], references: [id], onDelete: NoAction, map: "fk_client_auth")
+  client_auth        User                 @relation(fields: [client_id], references: [id], onDelete: Cascade, map: "fk_client_auth")
   Client_Case        Client_Case[]
 }
 
 model Client_Case {
   client_id String
   case_id   String
-  Cases     Cases  @relation(fields: [case_id], references: [case_id], onDelete: NoAction, map: "fk_clientcase_case")
-  Client    Client @relation(fields: [client_id], references: [client_id], onDelete: NoAction, map: "fk_clientcase_client")
+  Cases     Cases  @relation(fields: [case_id], references: [case_id], onDelete: Cascade, map: "fk_clientcase_case")
+  Client    Client @relation(fields: [client_id], references: [client_id], onDelete: Cascade, map: "fk_clientcase_client")
 
   @@id([client_id, case_id])
   @@index([case_id], map: "fk_clientcase_case")
@@ -99,7 +99,7 @@ model Document {
   upload_date DateTime @db.DateTime(0)
   doc_type    String   @db.VarChar(50)
   case_id     String
-  Cases       Cases    @relation(fields: [case_id], references: [case_id], onDelete: NoAction, map: "fk_document_case")
+  Cases       Cases    @relation(fields: [case_id], references: [case_id], onDelete: Cascade, map: "fk_document_case")
 
   @@index([case_id], map: "fk_document_case")
 }
@@ -129,15 +129,15 @@ model Staff {
   status            String?             @db.VarChar(40)
   Appointment_Staff Appointment_Staff[]
   Expense           Expense[]
-  staff_auth        User                @relation(fields: [staff_id], references: [id], onDelete: NoAction, map: "fk_staffauth_staff")
+  staff_auth        User                @relation(fields: [staff_id], references: [id], onDelete: Cascade, map: "fk_staffauth_staff")
   Staff_Case        Staff_Case[]
 }
 
 model Staff_Case {
   staff_id String
   case_id  String
-  Cases    Cases  @relation(fields: [case_id], references: [case_id], onDelete: NoAction, map: "fk_staffcase_case")
-  Staff    Staff  @relation(fields: [staff_id], references: [staff_id], onDelete: NoAction, map: "fk_staffcase_staff")
+  Cases    Cases  @relation(fields: [case_id], references: [case_id], onDelete: Cascade, map: "fk_staffcase_case")
+  Staff    Staff  @relation(fields: [staff_id], references: [staff_id], onDelete: Cascade, map: "fk_staffcase_staff")
 
   @@id([staff_id, case_id])
   @@index([case_id], map: "fk_staffcase_case")

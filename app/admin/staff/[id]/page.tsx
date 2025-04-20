@@ -327,10 +327,13 @@ export default function Staffinfo({
       const failures = results.filter((r) => !r.success).length;
 
       if (failures === 0) {
-        alert(`Successfully processed ${successes} client(s)`);
+        // Show success message
+        alert(
+          `Staff member "${staff?.name}" has been successfully deleted from the firm.`
+        );
 
-        // Refresh data after successful operations
-        window.location.reload();
+        // Redirect to staff listing page
+        window.location.href = "/admin/staff";
       } else {
         alert(
           `Completed: ${successes} success, ${failures} failed. See console for details.`
