@@ -88,10 +88,11 @@ export async function POST(request: NextRequest) {
     });
 
     return NextResponse.json(staff, { status: 201 });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("Error creating staff:", err);
+    const message = err instanceof Error ? err.message : String(err);
     return NextResponse.json(
-      { error: err.message || "Internal error" },
+      { error: message || "Internal error" },
       { status: 500 }
     );
   }

@@ -5,8 +5,22 @@ interface Props {
   onSuccess: () => void;
 }
 
+interface FormFields {
+  name: string;
+  experience: number;
+  phone_no: string;
+  bar_number: string;
+  address: string;
+  specialisation: string;
+  s_role: string;
+  designation: string;
+  image: string;
+  email: string;
+  password: string;
+}
+
 const StaffAdd: React.FC<Props> = ({ onClose, onSuccess }) => {
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<FormFields>({
     name: "",
     experience: 0,
     phone_no: "",
@@ -43,8 +57,9 @@ const StaffAdd: React.FC<Props> = ({ onClose, onSuccess }) => {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Add failed");
       onSuccess();
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      setError(message);
     } finally {
       setSubmitting(false);
     }
@@ -105,7 +120,7 @@ const StaffAdd: React.FC<Props> = ({ onClose, onSuccess }) => {
             <input
               type={type}
               name={name}
-              value={(form as any)[name]}
+              value={form[name as keyof FormFields]}
               onChange={handleChange}
               required
               className="w-full border border-gray-300 dark:border-gray-600 px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
