@@ -13,6 +13,7 @@ interface Staff_Table {
   s_role: string;
   designation?: string;
   image?: string;
+  status?: string; // Add this field
   staff_auth?: {
     email: string;
   };
@@ -48,6 +49,11 @@ export default function Home() {
   }, []);
 
   const filteredStaffList = staffList.filter((staff: Staff_Table) => {
+    // First filter out staff with status "not working"
+    if (staff.status === "not working") {
+      return false;
+    }
+
     // Search term filter
     const matchesSearch =
       searchTerm === "" ||
@@ -66,22 +72,12 @@ export default function Home() {
         .includes(selectedSpecialization.toLowerCase());
     }
 
-    // Role filter - FIXED: Now using s_role instead of designation
+    // Role filter
     let matchesRole = selectedRole === "";
     if (!matchesRole && staff.s_role) {
       matchesRole = staff.s_role
         .toLowerCase()
         .includes(selectedRole.toLowerCase());
-    }
-
-    // Debug logs to help troubleshoot
-    if (!matchesRole && selectedRole !== "") {
-      console.log(
-        "Staff s_role:",
-        staff.s_role,
-        "Selected role:",
-        selectedRole
-      );
     }
 
     return matchesSearch && matchesSpec && matchesRole;

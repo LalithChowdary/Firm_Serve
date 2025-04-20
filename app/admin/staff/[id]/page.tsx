@@ -102,6 +102,53 @@ export default function Staffinfo({
   const [loading, setLoading] = useState<boolean>(true);
   const [editTerm, setEditTerm] = useState("False");
 
+  // New state for delete/reassign modal
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  // Track selected staff or "delete" for each client
+  const [clientAssignments, setClientAssignments] = useState<{
+    [clientId: string]: string;
+  }>({});
+  const [allStaff, setAllStaff] = useState<Staff[]>([]);
+
+  // Add a new state variable to store the original API response
+  const [originalData, setOriginalData] = useState<StaffAPIResponse | null>(
+    null
+  );
+
+  // Updated getClientCasesMap function that only returns cases where the staff member and client overlap
+  const getClientCasesMap = (): Record<
+    string,
+    { case_id: string; title: string }[]
+  > => {
+    if (!staff?.clients || !originalData?.Staff_Case) return {};
+
+    // Create a mapping of client IDs to their cases that are handled by this staff
+    const clientCasesMap: Record<string, { case_id: string; title: string }[]> =
+      {};
+
+    // Initialize empty arrays for each client
+    staff.clients.forEach((client) => {
+      clientCasesMap[client.client_id] = [];
+    });
+
+    // For each staff case, find which clients are associated
+    originalData.Staff_Case?.forEach((staffCase) => {
+      // Extract client IDs from the Client_Case relationship
+      staffCase.Cases.Client_Case?.forEach((clientCase) => {
+        const clientId = clientCase.Client.client_id;
+        // Only add this case if the client is in our map
+        if (clientCasesMap[clientId]) {
+          clientCasesMap[clientId].push({
+            case_id: staffCase.Cases.case_id,
+            title: staffCase.Cases.title,
+          });
+        }
+      });
+    });
+
+    return clientCasesMap;
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -114,6 +161,9 @@ export default function Staffinfo({
         // Typed API response
         const data: StaffAPIResponse = await response.json();
         console.log("API response:", data);
+
+        // Save the original API response
+        setOriginalData(data);
 
         // Transform Staff_Case into cases[]
         const transformedCases =
@@ -189,8 +239,110 @@ export default function Staffinfo({
     fetchData();
   }, [id]);
 
+  useEffect(() => {
+    const fetchAllStaff = async () => {
+      try {
+        const res = await fetch("/api/admin/staff"); // Endpoint listing all staff
+        if (!res.ok) throw new Error("Error fetching all staff");
+        const staffList = await res.json();
+        setAllStaff(staffList);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    fetchAllStaff();
+  }, []);
+
   function handleclick() {
     setEditTerm((prev) => (prev === "True" ? "False" : "True"));
+  }
+
+  // Handler to open modal
+  function handleDeleteModal() {
+    setDeleteModalOpen(true);
+  }
+
+  // Handle selection changes: "reassignStaffId" or "delete"
+  function handleAssignmentChange(clientId: string, value: string) {
+    setClientAssignments((prev) => ({ ...prev, [clientId]: value }));
+  }
+
+  // Final submission (calls your server API that invokes the procedure)
+  async function handleConfirmDelete() {
+    if (Object.keys(clientAssignments).length === 0) {
+      alert("Please select an action for at least one client");
+      return;
+    }
+
+    // Show loading state
+    setLoading(true);
+
+    // Build array of fetch Promises
+    const requests = Object.entries(clientAssignments).map(
+      async ([clientId, actionValue]) => {
+        // Construct payload for the API
+        const payload = {
+          staffId: staff?.staff_id,
+          action: actionValue === "delete" ? "past client" : "reassign",
+          newStaffId: actionValue === "delete" ? null : actionValue,
+          clientId,
+        };
+
+        console.log(
+          `Processing client ${clientId} with action:`,
+          payload.action
+        );
+
+        try {
+          const response = await fetch("/api/admin/staff/delete", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+
+          const result = await response.json();
+
+          if (!response.ok) {
+            throw new Error(result.error || "API error");
+          }
+
+          return { clientId, success: true, message: result.message };
+        } catch (error) {
+          console.error(`Error for client ${clientId}:`, error);
+          return {
+            clientId,
+            success: false,
+            message: error instanceof Error ? error.message : "Unknown error",
+          };
+        }
+      }
+    );
+
+    try {
+      // Wait for all requests to complete
+      const results = await Promise.all(requests);
+
+      // Count successes and failures
+      const successes = results.filter((r) => r.success).length;
+      const failures = results.filter((r) => !r.success).length;
+
+      if (failures === 0) {
+        alert(`Successfully processed ${successes} client(s)`);
+
+        // Refresh data after successful operations
+        window.location.reload();
+      } else {
+        alert(
+          `Completed: ${successes} success, ${failures} failed. See console for details.`
+        );
+      }
+    } catch (error) {
+      console.error("Error during client processing:", error);
+      alert("An error occurred. Please check the console for details.");
+    } finally {
+      setDeleteModalOpen(false);
+      setLoading(false);
+    }
   }
 
   if (loading) {
@@ -265,6 +417,15 @@ export default function Staffinfo({
                     className="bg-gray-800 hover:bg-black text-white px-6 py-2 rounded-lg transition-colors duration-200"
                   >
                     Edit Profile
+                  </Button>
+                </div>
+                <div className="mt-4">
+                  {/* Add button to open Delete/Reassign modal */}
+                  <Button
+                    onClick={handleDeleteModal}
+                    className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg transition-colors duration-200"
+                  >
+                    Delete/Reassign Staff
                   </Button>
                 </div>
               </div>
@@ -542,6 +703,96 @@ export default function Staffinfo({
                     .finally(() => setLoading(false));
                 }}
               />
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Delete/Reassign Modal */}
+      {deleteModalOpen && (
+        <>
+          <div
+            className="fixed inset-0 bg-black bg-opacity-75 z-40"
+            onClick={() => setDeleteModalOpen(false)}
+          ></div>
+
+          <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white rounded-lg p-6 max-w-xl w-full max-h-[80vh] overflow-y-auto"
+            >
+              <h2 className="text-lg font-bold mb-4">
+                Reassign or Delete Clients
+              </h2>
+              {staff.clients && staff.clients.length > 0 ? (
+                staff.clients.map((client) => {
+                  // Get only cases that this staff handles for this client
+                  const clientCases =
+                    getClientCasesMap()[client.client_id] || [];
+
+                  return (
+                    <div key={client.client_id} className="mb-6 pb-4 border-b">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="font-medium text-lg">
+                          {client.name}
+                        </span>
+                        <select
+                          className="border rounded px-2 py-1"
+                          onChange={(e) =>
+                            handleAssignmentChange(
+                              client.client_id,
+                              e.target.value
+                            )
+                          }
+                          defaultValue=""
+                        >
+                          <option value="">Select an option</option>
+                          <option value="delete">Mark as Past Client</option>
+                          {allStaff
+                            .filter((s) => s.staff_id !== staff.staff_id)
+                            .map((s) => (
+                              <option key={s.staff_id} value={s.staff_id}>
+                                {s.name}
+                              </option>
+                            ))}
+                        </select>
+                      </div>
+
+                      {/* Show only cases this staff handles for this client */}
+                      <div className="ml-3 text-sm">
+                        <p className="text-gray-700 font-medium">
+                          Cases to be reassigned:
+                        </p>
+                        {clientCases.length > 0 ? (
+                          <ul className="list-disc ml-5 text-gray-600">
+                            {clientCases.map((c) => (
+                              <li key={c.case_id}>{c.title}</li>
+                            ))}
+                          </ul>
+                        ) : (
+                          <p className="text-gray-500 ml-5">No active cases</p>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })
+              ) : (
+                <p className="text-gray-500">No clients found.</p>
+              )}
+              <div className="mt-4 flex justify-end space-x-2">
+                <Button
+                  onClick={() => setDeleteModalOpen(false)}
+                  className="bg-gray-300 text-black px-4 py-2 rounded"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleConfirmDelete}
+                  className="bg-red-600 text-white px-4 py-2 rounded"
+                >
+                  Confirm
+                </Button>
+              </div>
             </div>
           </div>
         </>

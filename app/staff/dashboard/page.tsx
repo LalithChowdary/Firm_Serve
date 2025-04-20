@@ -69,12 +69,13 @@ interface ApiStaffCase {
 interface ApiStaffMember {
   staff_id: string;
   name?: string;
+  status?: string; // Add status field
   Appointment_Staff?: ApiAppointmentStaff[];
   Staff_Case?: ApiStaffCase[];
 }
 // --- END: Define detailed API response interfaces ---
 
-// Simplified interfaces for the dashboard state, now with staffName:
+// Simplified interfaces for the dashboard state, now with staffName and staffStatus:
 interface TodayAppointment {
   id: string;
   purpose: string;
@@ -93,6 +94,7 @@ interface ActiveCase {
 
 interface DashboardData {
   staffName: string;
+  staffStatus: string; // Add status field
   myAppointmentsToday: number;
   myCases: number;
   totalAppointments: number;
@@ -105,6 +107,7 @@ interface DashboardData {
 export default function StaffDashboard() {
   const [data, setData] = useState<DashboardData>({
     staffName: "",
+    staffStatus: "", // Initialize status
     myAppointmentsToday: 0,
     myCases: 0,
     totalAppointments: 0,
@@ -129,6 +132,7 @@ export default function StaffDashboard() {
 
           // Set the staff name from API (from the staff table)
           const staffName = staff.name || "Staff";
+          const staffStatus = staff.status || ""; // Extract status
 
           const today = new Date().toISOString().split("T")[0];
 
@@ -193,6 +197,7 @@ export default function StaffDashboard() {
 
           setData({
             staffName,
+            staffStatus, // Include status in the state
             myAppointmentsToday: todayAppointments.length,
             myCases: cases.length,
             totalAppointments: appointments.length,
@@ -207,6 +212,7 @@ export default function StaffDashboard() {
           );
           setData({
             staffName: "Staff",
+            staffStatus: "", // Default empty status
             myAppointmentsToday: 0,
             myCases: 0,
             totalAppointments: 0,
@@ -220,6 +226,7 @@ export default function StaffDashboard() {
         console.error("Failed to fetch or process dashboard data:", err);
         setData({
           staffName: "Staff",
+          staffStatus: "", // Default empty status
           myAppointmentsToday: 0,
           myCases: 0,
           totalAppointments: 0,
@@ -232,6 +239,35 @@ export default function StaffDashboard() {
     };
     getData();
   }, []);
+
+  // Add conditional rendering if staff has "not working" status
+  if (data.staffStatus === "not working") {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gray-50">
+        <div className="text-center max-w-md p-8 bg-white rounded-2xl shadow-xl">
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 0.5 }}
+          >
+            <div className="text-red-500 text-6xl mb-6">⚠️</div>
+            <h1 className="text-2xl font-bold text-gray-800 mb-4">
+              Access Restricted
+            </h1>
+            <p className="text-gray-600 mb-6">
+              You are no longer a part of this firm. Your access to the
+              dashboard has been revoked. Please contact the firm administrator
+              for more information.
+            </p>
+            <p className="text-sm text-gray-500">
+              If you believe this is a mistake, please contact HR or the system
+              administrator.
+            </p>
+          </motion.div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen">
