@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import React, { useState, useEffect } from "react";
+import StaffAdd from "@/components/Admin/StaffAdd";
 
 interface Staff_Table {
   staff_id: string;
@@ -13,48 +14,42 @@ interface Staff_Table {
   s_role: string;
   designation?: string;
   image?: string;
-  status?: string; // Add this field
+  status?: string;
   staff_auth?: {
     email: string;
   };
 }
 
 export default function Home() {
-  const [staffList, setStaffList] = useState([]);
+  const [staffList, setStaffList] = useState<Staff_Table[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedSpecialization, setSelectedSpecialization] = useState("");
   const [selectedRole, setSelectedRole] = useState("");
   const [loading, setLoading] = useState(true);
+  const [showAddModal, setShowAddModal] = useState(false);
+
+  const fetchStaff = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/admin/staff");
+      const data: Staff_Table[] = await res.json();
+      setStaffList(data);
+    } catch (err) {
+      console.error("Error fetching staff:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    setLoading(true);
-    fetch("/api/admin/staff")
-      .then((res) => res.json())
-      .then((data) => {
-        console.log("Fetched staff data:", data);
-
-        // Log the first staff member to see actual field names
-        if (data && data.length > 0) {
-          console.log("First staff member fields:", Object.keys(data[0]));
-          console.log("Role value:", data[0].s_role);
-        }
-
-        setStaffList(data);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error("Error fetching staff:", err);
-        setLoading(false);
-      });
+    fetchStaff();
   }, []);
 
   const filteredStaffList = staffList.filter((staff: Staff_Table) => {
-    // First filter out staff with status "not working"
     if (staff.status === "not working") {
       return false;
     }
 
-    // Search term filter
     const matchesSearch =
       searchTerm === "" ||
       (staff.name &&
@@ -64,7 +59,6 @@ export default function Home() {
           .toLowerCase()
           .includes(searchTerm.toLowerCase()));
 
-    // Specialization filter
     let matchesSpec = selectedSpecialization === "";
     if (!matchesSpec && staff.specialisation) {
       matchesSpec = staff.specialisation
@@ -72,7 +66,6 @@ export default function Home() {
         .includes(selectedSpecialization.toLowerCase());
     }
 
-    // Role filter
     let matchesRole = selectedRole === "";
     if (!matchesRole && staff.s_role) {
       matchesRole = staff.s_role
@@ -84,21 +77,15 @@ export default function Home() {
   });
 
   const handleSpecializationChange = (spec: string) => {
-    console.log("Setting specialization to:", spec);
     setSelectedSpecialization(spec);
   };
 
   const handleRoleChange = (role: string) => {
-    console.log("Setting role to:", role);
     setSelectedRole(role);
   };
 
-  // Debug logging for state changes
-  console.log("Current specialization:", selectedSpecialization);
-  console.log("Current role:", selectedRole);
-
   return (
-    <div className="bg-white min-h-screen p-4 md:p-8 flex flex-col md:grid md:grid-cols-2 md:grid-rows-1 gap-6">
+    <div className="bg-white min-h-screen p-4 md:p-8 flex flex-col md:grid md:grid-cols-2 gap-6">
       {/* Mobile search - visible only on small screens */}
       <div className="md:hidden mb-6">
         <h1 className="text-2xl font-bold text-gray-800 mb-4">
@@ -207,6 +194,13 @@ export default function Home() {
               </div>
             </div>
           </div>
+
+          <button
+            onClick={() => setShowAddModal(true)}
+            className="mt-4 w-full bg-black text-white py-2 rounded hover:bg-gray-800"
+          >
+            + Add New Staff
+          </button>
         </div>
       </div>
 
@@ -372,9 +366,28 @@ export default function Home() {
                 </div>
               </div>
             </div>
+
+            <button
+              onClick={() => setShowAddModal(true)}
+              className="mt-6 w-full bg-black text-white py-2 rounded hover:bg-gray-800"
+            >
+              + Add New Staff
+            </button>
           </div>
         </div>
       </div>
+
+      {showAddModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <StaffAdd
+            onClose={() => setShowAddModal(false)}
+            onSuccess={() => {
+              fetchStaff();
+              setShowAddModal(false);
+            }}
+          />
+        </div>
+      )}
     </div>
   );
 }
