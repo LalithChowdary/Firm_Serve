@@ -2,8 +2,8 @@
 
 A full-stack web application built to simplify and streamline the operations of a law firm by managing clients, cases, appointments, billing, staff assignments, and documentation — all in one centralized system.
 
-##🔗 Live Website: <a href="https://firm-serve.vercel.app/">https://firm-serve.vercel.app/</a> 
----
+## 🔗 Live Website: <a href="https://firm-serve.vercel.app/">https://firm-serve.vercel.app/</a> 
+
 
 ## 📌 Features
 
