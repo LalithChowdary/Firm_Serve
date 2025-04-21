@@ -2,8 +2,8 @@
 
 A full-stack web application built to simplify and streamline the operations of a law firm by managing clients, cases, appointments, billing, staff assignments, and documentation — all in one centralized system.
 
-##🔗 Live Website: <a href="https://firm-serve.vercel.app/">https://firm-serve.vercel.app/</a> 
----
+## 🔗 Live Website: <a href="https://firm-serve.vercel.app/">https://firm-serve.vercel.app/</a> 
+
 
 ## 📌 Features
 
@@ -40,12 +40,6 @@ A full-stack web application built to simplify and streamline the operations of 
    cd Firm_Serve
    ```
    
-   Unzipping-
-
-   ```bash
-   unzip Firm_Serve.zip
-   cd Firm_Serve
-   ```
 
 2. **Set up the `.env` file if cloned form git hub (not required if unzipped)**
    Add your database URL and any other required environment variables:
