@@ -8,12 +8,12 @@ export async function GET(
   try {
     // Await the params before using its properties
     const resolvedParams = await params;
-    const staff = await prisma.cases.findUnique({
+    const caseData = await prisma.cases.findUnique({
       where: { case_id: resolvedParams.id },
       include: {
         Client_Case: {
           include: {
-            Client:true,
+            Client: true,
           },
         },
         Staff_Case: {
@@ -21,46 +21,59 @@ export async function GET(
             Staff: true,
           },
         },
-        Appointment:true,
+        Appointment: true,
       },
     });
 
-
-    return NextResponse.json(staff);
+    return NextResponse.json(caseData);
   } catch (error) {
-    console.error("Error in GET /api/admin/staff/[id]:", error);
+    console.error("Error in GET /api/admin/case/[id]:", error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
     return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }
 
-// // PATCH method remains unchanged
-// export async function PATCH(
-//   request: Request,
-//   { params }: { params: Promise<{ id: string }> }
-// ) {
-//   try {
-//     const resolvedParams = await params;
-//     const data = await request.json();
-//     const updatedStaff = await prisma.staff.update({
-//       where: { staff_id: resolvedParams.id },
-//       data: {
-//         name: data.name,
-//         experience: data.experience,
-//         phone_no: data.phone_no,
-//         bar_number: data.bar_number,
-//         address: data.address,
-//         specialisation: data.specialisation,
-//         s_role: data.s_role,
-//         designation: data.designation,
-//         image: data.image,
-//       },
-//     });
-//     return NextResponse.json(updatedStaff);
-//   } catch (error) {
-//     const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-//     return new NextResponse(JSON.stringify({ error: errorMessage }), {
-//       status: 500,
-//     });
-//   }
-// }
+export async function PATCH(
+  req: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const resolvedParams = await params;
+    const { status } = await req.json();
+    
+    const updatedCase = await prisma.cases.update({
+      where: { case_id: resolvedParams.id },
+      data: { status }
+    });
+    
+    return NextResponse.json(updatedCase);
+  } catch (error: any) {
+    return NextResponse.json(
+      { error: error.message || "Failed to update case" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(
+  _: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const resolvedParams = await params;
+    
+    // Call the stored procedure to archive the case
+    await prisma.$executeRawUnsafe(
+      "CALL sp_archive_case(?)",
+      resolvedParams.id
+    );
+    
+    return NextResponse.json({ message: "Case archived successfully" });
+  } catch (error: any) {
+    console.error("Error archiving case:", error);
+    return NextResponse.json(
+      { error: error.message || "Failed to archive case" },
+      { status: 500 }
+    );
+  }
+}

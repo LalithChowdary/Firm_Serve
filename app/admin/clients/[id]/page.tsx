@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect, use } from "react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
+import Clientedit from "@/components/Admin/Clientedit";
 
 interface StaffUser {
   email: string;
@@ -12,6 +14,7 @@ interface ClientTable {
   name: string;
   phone_no: string;
   address: string;
+  status?: string;
   image?: string;
   client_auth: StaffUser;
   Client_Case?: Array<{
@@ -35,6 +38,7 @@ interface ClientTable {
       appointment_date?: string;
       purpose?: string;
       location?: string;
+      status?: string;
       Appointment_Staff?: Array<{
         Staff: {
           staff_id: string;
@@ -47,14 +51,17 @@ interface ClientTable {
   }>;
 }
 
-export default function Staffinfo({
+export default function ClientInfo({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
-  const [client, setclient] = useState<ClientTable | null>(null);
+  const router = useRouter();
+  const [client, setClient] = useState<ClientTable | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [editOpen, setEditOpen] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   useEffect(() => {
     console.log("Fetching client with ID:", id);
@@ -67,7 +74,7 @@ export default function Staffinfo({
       })
       .then((data: ClientTable) => {
         console.log("API response:", data);
-        setclient(data);
+        setClient(data);
       })
       .catch((error) => {
         console.error("Fetch error:", error);
@@ -75,12 +82,44 @@ export default function Staffinfo({
       .finally(() => setLoading(false));
   }, [id]);
 
+  async function handleDelete() {
+    if (
+      !confirm(
+        "Are you sure you want to delete this client? This will mark the client as 'PAST CLIENT' and cancel associated appointments."
+      )
+    ) {
+      return;
+    }
+
+    setDeleteLoading(true);
+    try {
+      const response = await fetch("/api/admin/client/delete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ clientId: id }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Failed to delete client");
+      }
+
+      alert("Client successfully deleted");
+      router.push("/admin/clients");
+    } catch (error: any) {
+      console.error("Delete failed:", error);
+      alert(`Error: ${error.message}`);
+    } finally {
+      setDeleteLoading(false);
+    }
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center ">
         <div className="text-center">
           <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-gray-200 border-t-gray-800 mb-4"></div>
-          <p className="text-gray-600">Loading staff information...</p>
+          <p className="text-gray-600">Loading client information...</p>
         </div>
       </div>
     );
@@ -91,24 +130,36 @@ export default function Staffinfo({
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center p-8 bg-white shadow-xl rounded-lg">
           <p className="text-2xl text-gray-800 font-semibold">
-            Staff not found
+            Client not found
           </p>
           <p className="text-gray-600 mt-2">
-            The requested staff profile does not exist or was removed.
+            The requested client profile does not exist or was removed.
           </p>
         </div>
       </div>
     );
   }
 
+  // Filter out inactive cases
+  const activeCases =
+    client.Client_Case?.filter(
+      (clientCase) => clientCase.Cases?.status !== "INACTIVE"
+    ) || [];
+
+  // Filter out canceled appointments
+  const activeAppointments =
+    client.Appointment_Client?.filter(
+      (app) => app.Appointment?.status !== "canceled"
+    ) || [];
+
   // Build a unique list of all staff
   const staffFromCases =
-    client.Client_Case?.flatMap(
+    activeCases.flatMap(
       (cCase) => cCase.Cases?.Staff_Case?.map((sCase) => sCase.Staff) || []
     ) || [];
 
   const staffFromAppointments =
-    client.Appointment_Client?.flatMap(
+    activeAppointments.flatMap(
       (aClient) =>
         aClient.Appointment?.Appointment_Staff?.map((aStaff) => aStaff.Staff) ||
         []
@@ -121,7 +172,7 @@ export default function Staffinfo({
   );
 
   return (
-    <div className=" min-h-screen py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-5xl mx-auto">
         {/* Card container */}
         <div className="bg-white rounded-xl shadow-lg overflow-hidden">
@@ -156,15 +207,30 @@ export default function Staffinfo({
                 <h1 className="text-3xl font-bold text-white mt-4">
                   {client.name}
                 </h1>
+                <div className="mt-4 flex space-x-2 justify-center md:justify-start">
+                  <button
+                    onClick={() => setEditOpen(true)}
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
+                  >
+                    Edit Client
+                  </button>
+                  <button
+                    onClick={handleDelete}
+                    disabled={deleteLoading}
+                    className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded"
+                  >
+                    {deleteLoading ? "Deleting..." : "Delete Client"}
+                  </button>
+                </div>
               </div>
             </div>
 
             {/* Details section */}
             <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-8">
               <DetailItem
-                label="Experience"
-                value={`${client.phone_no} `}
-                icon="📊"
+                label="Phone Number"
+                value={client.phone_no}
+                icon="📞"
               />
 
               <DetailItem
@@ -174,14 +240,18 @@ export default function Staffinfo({
               />
 
               <DetailItem label="Address" value={client.address} icon="📍" />
+
+              {client.status && (
+                <DetailItem label="Status" value={client.status} icon="📊" />
+              )}
             </div>
 
             <div className="mt-12">
               <h2 className="text-2xl font-semibold text-gray-900 mb-6">
-                All Cases
+                Active Cases
               </h2>
               <div className="bg-white rounded-lg shadow overflow-hidden">
-                {client.Client_Case && client.Client_Case.length > 0 ? (
+                {activeCases.length > 0 ? (
                   <div className="overflow-x-auto">
                     <table className="min-w-full divide-y divide-gray-200">
                       <thead className="bg-gray-50">
@@ -198,7 +268,7 @@ export default function Staffinfo({
                         </tr>
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-200">
-                        {client.Client_Case.map((clientCase, index) => (
+                        {activeCases.map((clientCase, index) => (
                           <tr key={index} className="hover:bg-gray-50">
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                               {clientCase.Cases?.title ?? "Untitled Case"}
@@ -233,7 +303,7 @@ export default function Staffinfo({
                   </div>
                 ) : (
                   <p className="text-gray-500 text-center py-4">
-                    No cases found
+                    No active cases found
                   </p>
                 )}
               </div>
@@ -241,17 +311,16 @@ export default function Staffinfo({
 
             <div className="mt-12 mb-8">
               <h2 className="text-2xl font-semibold text-gray-900 mb-6">
-                All Appointments
+                Upcoming Appointments
               </h2>
               <div className="bg-white rounded-lg shadow overflow-hidden">
-                {client.Appointment_Client &&
-                client.Appointment_Client.length > 0 ? (
+                {activeAppointments.length > 0 ? (
                   <div className="overflow-x-auto">
                     <table className="min-w-full divide-y divide-gray-200">
                       <thead className="bg-gray-50">
                         <tr>
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Title
+                            Purpose
                           </th>
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Date
@@ -265,7 +334,7 @@ export default function Staffinfo({
                         </tr>
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-200">
-                        {client.Appointment_Client.map((app, index) => (
+                        {activeAppointments.map((app, index) => (
                           <tr key={index} className="hover:bg-gray-50">
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                               {app.Appointment?.purpose ?? "Untitled"}
@@ -298,7 +367,7 @@ export default function Staffinfo({
                   </div>
                 ) : (
                   <p className="text-gray-500 text-center py-4">
-                    No appointments found
+                    No upcoming appointments found
                   </p>
                 )}
               </div>
@@ -306,7 +375,7 @@ export default function Staffinfo({
 
             <div className="mt-12">
               <h2 className="text-2xl font-semibold text-gray-900 mb-6">
-                All Staff
+                Associated Staff
               </h2>
               <div className="bg-white rounded-lg shadow overflow-hidden">
                 {uniqueStaff.length > 0 ? (
@@ -352,6 +421,31 @@ export default function Staffinfo({
           </div>
         </div>
       </div>
+
+      {/* Edit Modal */}
+      {editOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <Clientedit
+            clientId={client.client_id}
+            initialData={{
+              name: client.name,
+              phone_no: client.phone_no,
+              address: client.address,
+              image: client.image,
+            }}
+            onClose={() => setEditOpen(false)}
+            onSuccess={() => {
+              setEditOpen(false);
+              // Refresh client data
+              setLoading(true);
+              fetch(`/api/admin/client/${id}`)
+                .then((res) => res.json())
+                .then((data) => setClient(data))
+                .finally(() => setLoading(false));
+            }}
+          />
+        </div>
+      )}
     </div>
   );
 }

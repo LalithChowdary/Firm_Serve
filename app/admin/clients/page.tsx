@@ -1,12 +1,14 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import ClientAdd from "@/components/Admin/ClientAdd"; // You'll need to create this component
 
 interface client_table {
   client_id: number;
   name: string;
   address: string;
   phone_no: string;
+  status?: string;
   client_auth: {
     email: string;
   };
@@ -16,26 +18,31 @@ export default function Home() {
   const [clientList, setClientList] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
+  const [showAddModal, setShowAddModal] = useState(false); // Add this state
+
+  // Create a function to fetch clients
+  const fetchClients = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/admin/client");
+      const data = await res.json();
+      console.log("Fetched client data:", data);
+
+      // Filter out "PAST CLIENT" clients
+      const activeClients = data.filter(
+        (client: client_table) => client.status !== "PAST CLIENT"
+      );
+
+      setClientList(activeClients);
+    } catch (err) {
+      console.error("Error fetching clients:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    setLoading(true);
-    fetch("/api/admin/client")
-      .then((res) => res.json())
-      .then((data) => {
-        console.log("Fetched staff data:", data);
-
-        // Log the first staff member to see actual field names
-        if (data && data.length > 0) {
-          console.log("First client member fields:", Object.keys(data[0]));
-        }
-
-        setClientList(data);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error("Error fetching staff:", err);
-        setLoading(false);
-      });
+    fetchClients();
   }, []);
 
   const filteredClientList = clientList.filter((client: client_table) => {
@@ -88,6 +95,14 @@ export default function Home() {
               />
             </svg>
           </div>
+
+          {/* Add Client button for mobile */}
+          <button
+            onClick={() => setShowAddModal(true)}
+            className="mt-4 w-full bg-black text-white py-2 rounded hover:bg-gray-800"
+          >
+            + Add New Client
+          </button>
         </div>
       </div>
 
@@ -177,9 +192,30 @@ export default function Home() {
                 </svg>
               </div>
             </div>
+
+            {/* Add Client button for desktop */}
+            <button
+              onClick={() => setShowAddModal(true)}
+              className="mt-6 w-full bg-black text-white py-2 rounded hover:bg-gray-800"
+            >
+              + Add New Client
+            </button>
           </div>
         </div>
       </div>
+
+      {/* Modal for adding a new client */}
+      {showAddModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <ClientAdd
+            onClose={() => setShowAddModal(false)}
+            onSuccess={() => {
+              fetchClients(); // Refresh the client list
+              setShowAddModal(false);
+            }}
+          />
+        </div>
+      )}
     </div>
   );
 }

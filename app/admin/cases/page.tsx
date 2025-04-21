@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import CaseAdd from "@/components/Admin/CaseAdd"; // We'll create this component
 
 interface case_table {
   case_id: number;
@@ -23,30 +24,34 @@ export default function Home() {
   const [selectedCaseType, setSelectedCaseType] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("");
   const [loading, setLoading] = useState(true);
+  const [showAddModal, setShowAddModal] = useState(false); // New state for modal
+
+  // Function to fetch cases
+  const fetchCases = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/admin/case");
+      const data = await res.json();
+      console.log("Fetched case data:", data);
+
+      // Filter out INACTIVE cases here
+      const activeCases = data.filter(
+        (item: case_table) => item.status !== "INACTIVE"
+      );
+
+      setCaseList(activeCases);
+    } catch (err) {
+      console.error("Error fetching Cases:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    setLoading(true);
-    fetch("/api/admin/case")
-      .then((res) => res.json())
-      .then((data) => {
-        console.log("Fetched case data:", data);
-
-        // Log the first case to see actual field names
-        if (data && data.length > 0) {
-          console.log("First case fields:", Object.keys(data[0]));
-        }
-
-        setCaseList(data);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error("Error fetching Cases:", err);
-        setLoading(false);
-      });
+    fetchCases();
   }, []);
 
   const filteredCaseList = caseList.filter((cases: case_table) => {
-    console.log("Case object:", cases); // Log each case object
     // Search term filter
     const matchesSearch =
       searchTerm === "" ||
@@ -191,6 +196,14 @@ export default function Home() {
               </div>
             </div>
           </div>
+
+          {/* Add Case button for mobile */}
+          <button
+            onClick={() => setShowAddModal(true)}
+            className="mt-4 w-full bg-black text-white py-2 rounded hover:bg-gray-800"
+          >
+            + Add New Case
+          </button>
         </div>
       </div>
 
@@ -353,9 +366,30 @@ export default function Home() {
                 </div>
               </div>
             </div>
+
+            {/* Add Case button for desktop */}
+            <button
+              onClick={() => setShowAddModal(true)}
+              className="mt-6 w-full bg-black text-white py-2 rounded hover:bg-gray-800"
+            >
+              + Add New Case
+            </button>
           </div>
         </div>
       </div>
+
+      {/* Modal for adding a new case */}
+      {showAddModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <CaseAdd
+            onClose={() => setShowAddModal(false)}
+            onSuccess={() => {
+              fetchCases(); // Refresh the case list
+              setShowAddModal(false);
+            }}
+          />
+        </div>
+      )}
     </div>
   );
 }

@@ -1,75 +1,60 @@
-import { NextResponse } from 'next/server';
-import { prisma } from '@/prisma/client';
+import { NextResponse } from "next/server";
+import { prisma } from "@/prisma/client";
 
 export async function GET(
-  req: Request,
+  _: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  try {
-    // Await the params before using its properties
-    const resolvedParams = await params;
-    const staff = await prisma.client.findUnique({
-      where: { client_id: resolvedParams.id },
-      include: {
-        client_auth: true,
-        Client_Case: {
-          include: {
-            Cases: {
-              include: {
-                // Include client relationship properly through Client_Case
-                Staff_Case: {
-                  include: {
-                    Staff: true,
-                  }
-                }
-              }
-            }
-          },
-        },
-        Appointment_Client: {
-          include: {
-            Appointment: true,
+  const { id } = await params;
+
+  const client = await prisma.client.findUnique({
+    where: { client_id: id },
+    include: {
+      client_auth: true,
+      Client_Case: { include: { Cases: true } },
+      Appointment_Client: {
+        include: {
+          Appointment: {
+            include: {
+              Appointment_Staff: {
+                include: { Staff: true },
+              },
+            },
           },
         },
       },
-    });
+    },
+  });
 
-
-    return NextResponse.json(staff);
-  } catch (error) {
-    console.error("Error in GET /api/admin/staff/[id]:", error);
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-    return NextResponse.json({ error: errorMessage }, { status: 500 });
+  if (!client) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
+
+  return NextResponse.json(client);
 }
 
-// // PATCH method remains unchanged
-// export async function PATCH(
-//   request: Request,
-//   { params }: { params: Promise<{ id: string }> }
-// ) {
-//   try {
-//     const resolvedParams = await params;
-//     const data = await request.json();
-//     const updatedStaff = await prisma.staff.update({
-//       where: { staff_id: resolvedParams.id },
-//       data: {
-//         name: data.name,
-//         experience: data.experience,
-//         phone_no: data.phone_no,
-//         bar_number: data.bar_number,
-//         address: data.address,
-//         specialisation: data.specialisation,
-//         s_role: data.s_role,
-//         designation: data.designation,
-//         image: data.image,
-//       },
-//     });
-//     return NextResponse.json(updatedStaff);
-//   } catch (error) {
-//     const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-//     return new NextResponse(JSON.stringify({ error: errorMessage }), {
-//       status: 500,
-//     });
-//   }
-// }
+export async function PATCH(
+  req: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
+  const { name, phone_no, address, image } = await req.json();
+
+  const updateData: {
+    name: string;
+    phone_no: string;
+    address: string;
+    image?: string | null;
+  } = { name, phone_no, address };
+
+  if (typeof image === "string" && image.length > 0) {
+    updateData.image = image;
+  }
+
+  const updated = await prisma.client.update({
+    where: { client_id: id },
+    data: updateData,
+  });
+
+  return NextResponse.json(updated);
+}

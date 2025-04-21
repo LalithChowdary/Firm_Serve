@@ -14,6 +14,11 @@ const nextConfig: NextConfig = {
         hostname: 'images.hindustantimes.com',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'static.wikia.nocookie.net',
+        pathname: '/**',
+      },
     ],
   }
 };
