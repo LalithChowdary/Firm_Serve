@@ -1,36 +1,127 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 📚 Legal Case Management System
 
-## Getting Started
+A full-stack web application built to simplify and streamline the operations of a law firm by managing clients, cases, appointments, billing, staff assignments, and documentation — all in one centralized system.
 
-First, run the development server:
+<p style="font-size: 20px; font-weight: bold;">🔗 Live Website: <a href="https://firm-serve.vercel.app/">https://firm-serve.vercel.app/</a></p>
+---
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## 📌 Features
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- ✅ Role-based user authentication and access control
+- 👤 Client and staff registration and management
+- 📁 Case creation and assignment to both staff and clients
+- 📅 Appointment scheduling between clients and staff with conflict prevention
+- 📄 Uploading and retrieving documents linked to specific cases
+- 💳 Billing and payment tracking per client-case pair
+- 🔄 Staff removal with automatic case reassignment or client archiving
+- 🛠 Admin dashboard for user control and system oversight
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🧰 Tech Stack
 
-## Learn More
+| Layer        | Technology           |
+|--------------|----------------------|
+| Frontend     | Next.js, TypeScript  |
+| Backend ORM  | Prisma               |
+| Database     | MySQL                |
+| Tools Used   | VS Code, MySQL Workbench, GitHub |
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## ⚙️ Setup Instructions
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. **Clone the repository or unzip the attached file**
 
-## Deploy on Vercel
+   Cloning-
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+   
+   git clone https://github.com/LalithChowdary/Firm_Serve.git
+   cd Firm_Serve
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+   
+   Unzipping-
+
+
+   unzip Firm_Serve.zip
+   cd Firm_Serve
+
+
+2. **Set up the `.env` file if cloned form git hub (not required if unzipped)**
+   Add your database URL and any other required environment variables:
+   ```env
+
+   ```
+
+
+3. **Install dependencies**
+   
+   npm install
+   
+
+4. **Generate Prisma Client**
+   
+   npx prisma generate
+   
+   
+
+5. **Start the development server**
+   
+   npm run dev
+   
+
+   Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+
+6.Demo Login Credentials:
+
+  Admin:
+  Email: isaac.grant@example.com
+  Password: Isaac123
+
+  Staff:
+  Email: john.smith@example.com
+  Password: John123
+
+  Client:
+  Email: info@acmecorp.com
+  Password: Acmecorp123
+
+  📁 Additional credentials are available in the passwords.txt file included in the submission zip.
+
+---
+
+## 🔗 References
+
+- [Next.js Documentation](https://nextjs.org/docs)
+- [TypeScript Documentation](https://www.typescriptlang.org/docs/)
+- [Prisma ORM Guide](https://www.prisma.io/docs)
+- [MySQL Stored Procedures](https://www.mysqltutorial.org/mysql-stored-procedure/)
+
+---
+
+## 👨‍💻 Author
+
+**Lalith**  
+B.Tech CSE | Shiv Nadar Institute of Eminence  
+GitHub: [github.com/LalithChowdary](https://github.com/LalithChowdary)
+
+**Srinivas**  
+B.Tech CSE | Shiv Nadar Institute of Eminence  
+GitHub: [github.com/Srinivas](https://github.com/srinivas-2535)
+
+**Trishal**  
+B.Tech CSE | Shiv Nadar Institute of Eminence  
+GitHub: [github.com/Trishal](https://github.com/trishaladabala)
+
+**Kousik**  
+B.Tech CSE | Shiv Nadar Institute of Eminence  
+GitHub: [github.com/Kousik](https://github.com/Kowshik3073)
+
+
+---
+
+## 🛠 Stored Procedures
+
+- `sp_archive_case`
+- `sp_archive_client`
+- `sp_remove_staff`
