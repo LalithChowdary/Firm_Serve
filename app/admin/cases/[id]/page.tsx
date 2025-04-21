@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, use } from "react";
+import React, { useState, useEffect, use, useCallback } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 
@@ -86,7 +86,7 @@ export default function CaseDetailsPage({
   const [deleteLoading, setDeleteLoading] = useState(false);
 
   // Fetch case data
-  const fetchCaseData = async () => {
+  const fetchCaseData = useCallback(async () => {
     setLoading(true);
     try {
       const response = await fetch(`/api/admin/case/${id}`);
@@ -100,11 +100,11 @@ export default function CaseDetailsPage({
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
 
   useEffect(() => {
     fetchCaseData();
-  }, [id]);
+  }, [fetchCaseData]);
 
   // Update case status
   const updateCaseStatus = async () => {
@@ -122,7 +122,7 @@ export default function CaseDetailsPage({
         throw new Error("Failed to update case status");
       }
 
-      const updatedCase = await response.json();
+      await response.json();
       setCaseData({ ...caseData, status: newStatus });
       setEditStatus(false);
       alert("Case status updated successfully");

@@ -38,16 +38,17 @@ export async function POST(req: Request) {
       );
       
       console.log("Stored procedure executed successfully");
-    } catch (sqlError: any) {
+    } catch (sqlError: unknown) {
       console.error("SQL Error:", sqlError);
+      const errorMessage = sqlError instanceof Error ? sqlError.message : String(sqlError);
       return NextResponse.json(
-        { error: `Database error: ${sqlError.message}` },
+        { error: `Database error: ${errorMessage}` },
         { status: 500 }
       );
     }
 
     return NextResponse.json({ message: "Client archived successfully" });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Unexpected error:", error);
     return NextResponse.json(
       { error: "An unexpected error occurred" },

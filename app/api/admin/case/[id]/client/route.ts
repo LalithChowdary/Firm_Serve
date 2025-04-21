@@ -18,9 +18,13 @@ export async function POST(
     });
     
     return NextResponse.json(clientCase);
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error 
+      ? error.message 
+      : "Failed to add client to case";
+      
     return NextResponse.json(
-      { error: error.message || "Failed to add client to case" },
+      { error: errorMessage },
       { status: 500 }
     );
   }

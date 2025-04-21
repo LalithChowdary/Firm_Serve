@@ -74,10 +74,10 @@ export async function POST(request: Request) {
     });
 
     return NextResponse.json(result, { status: 201 });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error creating case:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to create case" },
+      { error: error instanceof Error ? error.message : "Failed to create case" },
       { status: 500 }
     );
   }

@@ -106,9 +106,13 @@ export default function ClientInfo({
 
       alert("Client successfully deleted");
       router.push("/admin/clients");
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Delete failed:", error);
-      alert(`Error: ${error.message}`);
+      alert(
+        `Error: ${
+          error instanceof Error ? error.message : "Unknown error occurred"
+        }`
+      );
     } finally {
       setDeleteLoading(false);
     }

@@ -16,9 +16,13 @@ export async function DELETE(
     });
     
     return NextResponse.json({ message: "Client removed from case" });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error 
+      ? error.message 
+      : "Failed to remove client from case";
+      
     return NextResponse.json(
-      { error: error.message || "Failed to remove client from case" },
+      { error: errorMessage },
       { status: 500 }
     );
   }

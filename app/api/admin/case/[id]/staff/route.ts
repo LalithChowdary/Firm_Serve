@@ -17,9 +17,9 @@ export async function POST(
     });
     
     return NextResponse.json(staffCase);
-  } catch (error: any) {
+  } catch (error: unknown) {
     return NextResponse.json(
-      { error: error.message || "Failed to add staff to case" },
+      { error: error instanceof Error ? error.message : "Failed to add staff to case" },
       { status: 500 }
     );
   }

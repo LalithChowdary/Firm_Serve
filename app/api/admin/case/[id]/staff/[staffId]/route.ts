@@ -16,9 +16,9 @@ export async function DELETE(
     });
     
     return NextResponse.json({ message: "Staff removed from case" });
-  } catch (error: any) {
+  } catch (error: unknown) {
     return NextResponse.json(
-      { error: error.message || "Failed to remove staff from case" },
+      { error: error instanceof Error ? error.message : "Failed to remove staff from case" },
       { status: 500 }
     );
   }

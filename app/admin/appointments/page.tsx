@@ -31,6 +31,7 @@ interface Staff {
 interface Case {
   case_id: string;
   title: string;
+  status?: string; // Add the status property
 }
 
 export default function Home() {
@@ -298,7 +299,7 @@ const AppointmentAddModal: React.FC<AppointmentAddModalProps> = ({
 
         // Filter out inactive cases
         const activeCases = casesData.filter(
-          (c: any) => c.status !== "INACTIVE"
+          (c: Case) => c.status !== "INACTIVE"
         );
         setCases(activeCases);
       } catch (err) {

@@ -47,9 +47,9 @@ export async function PATCH(
     });
     
     return NextResponse.json(updatedCase);
-  } catch (error: any) {
+  } catch (error: unknown) {
     return NextResponse.json(
-      { error: error.message || "Failed to update case" },
+      { error: error instanceof Error ? error.message : "Failed to update case" },
       { status: 500 }
     );
   }
@@ -69,10 +69,10 @@ export async function DELETE(
     );
     
     return NextResponse.json({ message: "Case archived successfully" });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error archiving case:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to archive case" },
+      { error: error instanceof Error ? error.message : "Failed to archive case" },
       { status: 500 }
     );
   }
