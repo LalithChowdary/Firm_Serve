@@ -35,40 +35,37 @@ A full-stack web application built to simplify and streamline the operations of 
 
    Cloning-
 
-   
+   ```bash
    git clone https://github.com/LalithChowdary/Firm_Serve.git
    cd Firm_Serve
-
+   ```
    
    Unzipping-
 
-
+   ```bash
    unzip Firm_Serve.zip
    cd Firm_Serve
-
+   ```
 
 2. **Set up the `.env` file if cloned form git hub (not required if unzipped)**
    Add your database URL and any other required environment variables:
-   ```env
-
-   ```
 
 
 3. **Install dependencies**
-   
+   ```bash
    npm install
-   
+   ```
 
 4. **Generate Prisma Client**
-   
+   ```bash
    npx prisma generate
-   
+   ```
    
 
 5. **Start the development server**
-   
+   ```bash
    npm run dev
-   
+   ```
 
    Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
