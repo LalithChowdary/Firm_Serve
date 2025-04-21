@@ -409,7 +409,7 @@ export default function CaseDetailsPage({
                                     className="rounded-full mr-2"
                                   />
                                 ) : (
-                                  <span className="inline-block w-8 h-8 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center mr-2">
+                                  <span className="w-8 h-8 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center mr-2">
                                     {client.name.charAt(0)}
                                   </span>
                                 )}
@@ -492,7 +492,7 @@ export default function CaseDetailsPage({
                                     className="rounded-full mr-2"
                                   />
                                 ) : (
-                                  <span className="inline-block w-8 h-8 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center mr-2">
+                                  <span className=" w-8 h-8 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center mr-2">
                                     {staff.name.charAt(0)}
                                   </span>
                                 )}
@@ -699,7 +699,7 @@ function ClientSelectionModal({
                             className="rounded-full"
                           />
                         ) : (
-                          <span className="inline-block w-10 h-10 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center">
+                          <span className="w-10 h-10 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center">
                             {client.name.charAt(0)}
                           </span>
                         )}
@@ -819,7 +819,7 @@ function StaffSelectionModal({
                             className="rounded-full"
                           />
                         ) : (
-                          <span className="inline-block w-10 h-10 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center">
+                          <span className="w-10 h-10 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center">
                             {staff.name.charAt(0)}
                           </span>
                         )}
