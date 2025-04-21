@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/prisma/client";
+import { prisma} from "@/prisma/client"; // Import Prisma namespace
 import { v4 as uuidv4 } from 'uuid';
 import { z } from "zod";
+import { Prisma } from "@prisma/client";
 
 const appointmentSchema = z.object({
   purpose: z.string().min(1, "Purpose is required"),
@@ -9,7 +10,7 @@ const appointmentSchema = z.object({
   appointment_date: z.string().refine((date) => !isNaN(Date.parse(date)), {
     message: "Valid date is required",
   }),
-  case_id: z.string().nullable().optional(),
+  case_id: z.string().min(1, "Case ID is required"), // Make case_id mandatory
   clients: z.array(z.string()).optional().default([]),
   staff: z.array(z.string()).optional().default([])
 });
@@ -28,7 +29,7 @@ export async function POST(request: Request) {
     }
 
     const { purpose, location, appointment_date, case_id, clients, staff } = validationResult.data;
-    
+
     // Generate unique ID for the appointment
     const appointmentId = uuidv4();
 
@@ -36,19 +37,17 @@ export async function POST(request: Request) {
     const result = await prisma.$transaction(async (tx) => {
       // 1. Create the appointment
       // Create a data object that respects the schema requirements
-      const appointmentData: any = {
+      // Use Prisma.AppointmentCreateInput for type safety
+      const appointmentData: Prisma.AppointmentCreateInput = {
         appointment_id: appointmentId,
         purpose,
         location,
         appointment_date: new Date(appointment_date),
-        status: 'scheduled'
+        status: 'scheduled',
+        // Connect to the mandatory case
+        Cases: { connect: { case_id: case_id } }
       };
-      
-      // Only include case_id if it has a value
-      if (case_id) {
-        appointmentData.case_id = case_id;
-      }
-      
+
       const newAppointment = await tx.appointment.create({
         data: appointmentData
       });
@@ -65,7 +64,7 @@ export async function POST(request: Request) {
         );
         await Promise.all(clientPromises);
       }
-      
+
       // 3. Create staff relationships (if any)
       if (staff.length > 0) {
         const staffPromises = staff.map((staffId) =>
@@ -83,10 +82,12 @@ export async function POST(request: Request) {
     });
 
     return NextResponse.json(result, { status: 201 });
-  } catch (error: any) {
+  } catch (error: unknown) { // Use unknown instead of any
     console.error("Error creating appointment:", error);
+    // Type check before accessing properties
+    const errorMessage = error instanceof Error ? error.message : "Failed to create appointment";
     return NextResponse.json(
-      { error: error.message || "Failed to create appointment" },
+      { error: errorMessage },
       { status: 500 }
     );
   }
