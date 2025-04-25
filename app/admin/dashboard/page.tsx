@@ -368,7 +368,7 @@ export default function Dashboard() {
                   className="bg-white rounded-xl md:rounded-2xl shadow-md hover:shadow-xl transition-shadow duration-300 p-4 md:p-5 border border-gray-100"
                 >
                   <div className="flex items-center justify-between mb-2">
-                    <h3 className="text-lg md:text-xl font-semibold text-indigo-600 truncate">
+                    <h3 className="text-lg md:text-xl font-semibold truncate">
                       {appt.purpose}
                     </h3>
                     <span className="text-xs text-gray-500 whitespace-nowrap ml-2">
