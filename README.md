@@ -4,6 +4,9 @@ A full-stack web application built to simplify and streamline the operations of 
 
 ## 🔗 Live Website: <a href="https://firm-serve.vercel.app/">https://firm-serve.vercel.app/</a> 
 
+The passwords.txt file contains login credentials for three distinct user roles across different sites: Admin, Client, and Staff. Each site corresponds to a different access level, ensuring role-based security and appropriate permission management.
+
+
 
 ## 📌 Features
 
